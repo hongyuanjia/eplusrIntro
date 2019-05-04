@@ -29,9 +29,23 @@ opts_chunk$set(
   comment = "#>",
   fig.path = 'figure/', cache.path = 'cache/', fig.align = 'center',
   fig.width = 12, fig.show = 'hold', fig.height = 8.5,
-  cache = TRUE, external = TRUE, dev = 'svglite'
+  cache = FALSE, external = TRUE, dev = 'svglite'
 )
 
+hook_output <- knitr::knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  if (!is.null(n <- options$out.lines)) {
+    x <- unlist(strsplit(x, '\n', fixed = TRUE))
+    if (length(x) > n) {
+      # truncate the output
+      x <- c(head(x, n), '....', '')
+    } else {
+      x <- c(x, "")
+    }
+    x <- paste(x, collapse = '\n') # paste first n lines together
+  }
+  hook_output(x, options)
+})
 options(htmltools.dir.version = FALSE)
 
 ```
@@ -58,8 +72,9 @@ extra_css <- list(
     width   = "100%",
     flex    = "1 1 auto"
   ),
-  ".scroll-output" = list(height = "80%", "overflow-y" = "scroll")
+  "pre" = list(background = "#efefef")
 )
+
 write_extra_css(extra_css)
 ```
 
@@ -158,7 +173,7 @@ class: inverse middle center
 
 --
 
-## Becase...
+## Because...
 
 --
 
@@ -269,7 +284,7 @@ avail_eplus()
 
 What if your EnergyPlus installed at a custom location? Just add it:
 
-```{r eval = FALSE}
+```{r, eval = FALSE}
 use_eplus("your_fancy_path")
 ```
 
@@ -285,7 +300,7 @@ is_avail_eplus(8.8)
 
 You can install EnergyPlus using `install_eplus()`.
 
-```{r eval = FALSE}
+```{r, eval = FALSE}
 install_eplus(8.8)
 ```
 
@@ -293,9 +308,15 @@ install_eplus(8.8)
 
 You can also download the installer and install it by yourself:
 
-```{r eval = FALSE}
+```{r, eval = FALSE}
 download_eplus(8.8, dir = "where_to_save")
 ```
+
+---
+
+class: inverse middle center
+
+.center[.big[`Idf`]]
 
 ---
 
@@ -309,26 +330,19 @@ download_eplus(8.8, dir = "where_to_save")
 
 .blue[\[`r icon::fa("question", size = 2)`\] How can I open an IDF file?]
 
-.scroll-output[
-```{r}
+```{r read-idf, out.lines=10}
 (idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
 ```
-]
 
 ---
 
 ## Nomenclature
 
+.blue[\[`r icon::fa("question", size = 2)`\] How does `Group` and `Class` mean?]
+
 .center[<img src="figure/nomenclature.png" width="120%" align="left" />]
 
-<br>
-<br>
-
-- **`Group`** 
-    - `r icon::fa("sort-amount-down")` **`Class`**
-         - `r icon::fa("sort-amount-down")` **`Object`**
-             - `r icon::fa("sort-amount-down")` **`Field`**
-                  - `r icon::fa("sort-amount-down")` **`Value`** 
+.center[**`Group`** --> **`Class`** --> **`Object`** --> **`Field`** --> **`Value`** ]
 
 ---
 
@@ -344,6 +358,8 @@ idf$path()
 
 .blue[\[`r icon::fa("question", size = 2)`\] Is there any `Location and Climate` related thing in my model?]
 
+--
+
 ```{r}
 idf$is_valid_group("Location and Climate")
 ```
@@ -351,6 +367,56 @@ idf$is_valid_group("Location and Climate")
 --
 
 .blue[\[`r icon::fa("question", size = 2)`\] Is there any `Schedule:Constant` object in my model?]
+
+--
+
+```{r}
+idf$is_valid_class("Schedule:Constant")
+```
+
+---
+
+## Basic Info
+
+.blue[\[`r icon::fa("question", size = 2)`\] How can I get all names of existing groups and classes in my model?]
+
+--
+
+```{r}
+str(idf$group_name())
+str(idf$class_name())
+```
+
+---
+
+## Basic Info
+
+.blue[\[`r icon::fa("question", size = 2)`\] How can I get all names of existing groups and classes defined by EnergyPlus?]
+
+--
+
+```{r}
+str(idf$group_name(all = TRUE))
+str(idf$class_name(all = TRUE))
+```
+
+---
+
+## Basic Info
+
+.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Location and Climate` related thing in my model?]
+
+--
+
+```{r}
+idf$is_valid_group("Location and Climate")
+```
+
+--
+
+.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Schedule:Constant` object in my model?]
+
+--
 
 ```{r}
 idf$is_valid_class("Schedule:Constant")
@@ -372,6 +438,8 @@ idf$object_num(c("Construction", "Zone"))
 
 .blue[\[`r icon::fa("question", size = 2)`\] Every construction and zone should have a name. Can I get them?]
 
+--
+
 ```{r}
 idf$object_name(c("Construction", "Zone"))
 ```
@@ -383,13 +451,17 @@ idf$object_name(c("Construction", "Zone"))
 
 .blue[\[`r icon::fa("question", size = 2)`\] I don't think object in class `Version` has a name...]
 
+--
+
 ```{r}
 idf$object_name("Version")
 ```
 
 --
 
-.blue[\[`r icon::fa("question", size = 2)`\] If so, how can I get distinguish objects that do not have names?]
+.blue[\[`r icon::fa("question", size = 2)`\] If so, how can I distinguish objects that do not have names?]
+
+--
 
 ```{r}
 idf$object_id(c("Version", "Construction", "Zone"))
@@ -399,21 +471,37 @@ idf$object_id(c("Version", "Construction", "Zone"))
 
 ## Object Query
 
+.blue[\[`r icon::fa("question", size = 2)`\] How can I see if a material is used by other constructions?]
+
+--
+
+```{r out.lines = 15}
+idf$object_relation("wd01")
+```
+
+---
+
+## Object Query
+
 .blue[\[`r icon::fa("question", size = 2)`\] How can I see the contents of an object?]
+
+--
 
 ```{r}
 idf$object("wall-1")
 ```
 
---
+---
+
+## Object Query
 
 .blue[\[`r icon::fa("question", size = 2)`\] What if I want to see all objects in class `Material`?]
 
-.scroll-output[
-```{r}
+--
+
+```{r, out.lines = 15}
 idf$Material
 ```
-]
 
 ---
 
@@ -421,22 +509,259 @@ idf$Material
 
 .blue[\[`r icon::fa("question", size = 2)`\] What if I want to see both a construction and a material?]
 
+--
+
+```{r out.lines = 15}
+idf$objects(c("wall-1", "wd01"))
+```
+
+---
+
+## Object Query
+
+.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see a material and all constructions that use it?]
+
+--
+
+```{r out.lines = 15}
+idf$objects_in_relation("wd01", "ref_by")
+```
+
+---
+
+## Object Query
+
+.blue[\[`r icon::fa("question", size = 2)`\] But those construction may be also used in surfaces. Can I get all objects that has some relations with that material?]
+
+--
+
+```{r out.lines = 15}
+lapply(idf$objects_in_relation("wd01", "ref_by", recursive = TRUE),
+       function (x) x$class_name())
+```
+
+---
+
+## Add Objects
+
+```{r, out.lines = 10}
+idf$add(
+  RunPeriod = list(
+    name = "Jan", begin_month = 1, begin_day_of_month = 1,
+    end_month = 1, end_day_of_month = 31),
+  Material = list("my_mat", "Rough", 0.2, 1.5, 2000, 800)
+)
+```
+
+---
+
+## Definition
+
+.blue[\[`r icon::fa("question", size = 2)`\] But how can I remember all field names?]
+
+--
+
 ```{r}
-idf$objects("wall-1")
+mat_def <- idf$definition("Material")
+mat_def
+```
+
+---
+
+## Definition
+
+.blue[\[`r icon::fa("question", size = 2)`\] I don't want to copy from the console!]
+
+--
+
+```{r}
+mat_def$field_name()
+```
+
+---
+
+## Definition
+
+.blue[\[`r icon::fa("question", size = 2)`\] So I guess there should be other data I can get from `mat_def`...]
+
+--
+
+`IdfObject` is your friend.
+
+```{r eval = FALSE}
+?IddObject
+```
+
+---
+
+## Add Objects
+
+```{r}
+my_const <- list(Construction = c("my_const", "my_mat"))
+idf$add(my_const)
 ```
 
 --
 
-.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see all objects in class `Material`?]
-
-.scroll-output[
 ```{r}
-idf$Material
+idf$object_relation("my_const", "ref_to")
+```
+
+---
+
+## Change Existing Objects
+
+```{r}
+idf$set(my_mat = list(name = "new_mat"))
+idf$Construction$my_const
+```
+
+---
+
+## Rename Objects
+
+```{r}
+idf$rename(mat_renamed = "new_mat")
+idf$Construction$my_const
+```
+
+---
+
+## Duplicate Objects
+
+```{r}
+names(idf$dup(rep("jan", 11)))
+```
+
+---
+
+## BONUS: Paste from IDF Editor (Windows Only)
+
+```{r, eval = FALSE}
+idf$paste()
+```
+
+---
+
+## Load Objects
+
+.blue[\[`r icon::fa("question", size = 2)`\] I love copy-- paste...]
+
+--
+
+```{r}
+idf$load(
+  "Material,
+   mat-to-load, !- Name
+   rough,       !- Roughness
+   0.1,         !- Thickness {m}
+   1.5,         !- Conductivity {W/m-K}
+   2000,        !- Density {kg/m3}
+   800;         !- Specific Heat {J/kg-K}
+  "
+)
+```
+
+---
+
+## Load Objects
+
+.pull-left[
+```{r, eval = FALSE}
+idf$load(
+  "Material,
+   mat-to-load,
+   rough,
+   0.1,
+   1.5,
+   2000,
+   800;
+  "
+)
 ```
 ]
 
+.pull-right[
+```{r, eval = FALSE}
+idf$load(c(
+  "Material,",
+  "mat-to-load,",
+  "rough,",
+  "0.1,",
+  "1.5,",
+  "2000,",
+  "800;"
+))
+```
+]
 
 ---
+
+## Load Objects
+
+.blue[\[`r icon::fa("question", size = 2)`\] You know, R is fameous for `data.frame`...]
+
+--
+
+```{r}
+idf$load(
+  data.frame(class = "Material", index = 1:6,
+             value = I(list("mat-in-df", "rough", 0.1, 0.5, 2000, 800)),
+             stringsAsFactors = FALSE
+  )
+)
+```
+
+---
+
+## Data Extraction
+
+.blue[\[`r icon::fa("question", size = 2)`\] No one would like to manually create that string or data.frame...]
+
+--
+
+```{r}
+idf$to_string("mat_renamed", head = FALSE)
+```
+
+---
+
+```{r}
+kable(idf$to_table("mat_renamed"))
+```
+
+---
+
+## Insert Objects
+
+.blue[\[`r icon::fa("question", size = 2)`\] What if I want to directly insert objects from another `Idf`?]
+
+--
+
+```{r, eval = FALSE, include=FALSE}
+idf$insert("mat_renamed")
+```
+
+---
+
+## Delete Objects
+
+```{r del-err, error = TRUE}
+idf$del("mat_renamed")
+```
+
+---
+
+## Delete Objects
+
+.blue[\[`r icon::fa("question", size = 2)`\] What if I want to delete the material and all constructions that use it?]
+
+```{r, error=TRUE}
+idf$del("mat_renamed", .ref_by = TRUE)
+```
+
+---
+
 ## Reproduce
 
 <img src="figure/final-doc.png" width="50%" align="left" />
@@ -462,10 +787,6 @@ Simulation is not the goal, collecting the simulation results is.
 
 <img src="figure/validate.png" width="95%" align="center" />
 
-
-
-## Using text editor, error checking. programically changing
-
 ---
 
 ## Other approach
@@ -477,12 +798,6 @@ eppy:
 
 * openstudio SDK. Highly inspired. Ruby binding. Too heavy. Ruby is not for data analysis.
 jeplus
-
----
-
-## What is Group? Class? Object? Field? Value?
-
-<img src="figure/nomenclature.png" width="95%" align="center" />
 
 ---
 
@@ -509,24 +824,8 @@ EnergyPlus always gives untidy data.
 
 ---
 
-## I can directly read my results from excel, why bother using eplusr?
-Parametric simulations
-Read all data into memory is expensive.
-
-`$report_data()` using SQL
-
----
-
-## I can do all of this in IDF Editor, why bother `Idf` class?
-
----
-
 ## How can I change the weather data?
 Should compliance with the Runperiod headers and others
-
----
-
-## I can directly read from Exel. The date time column. the start day of week
 
 ---
 
@@ -543,10 +842,6 @@ Should compliance with the Runperiod headers and others
 * Version Updater
 
 * A Shiny-based GUI?
-
----
-
-## Typical Workflow for A Building Energy Modeller
 
 ---
 
@@ -570,23 +865,7 @@ Should compliance with the Runperiod headers and others
 
 ---
 
-## Read EnergyPlus Model
-
-***How can I read an EnergyPlus model?***
-
-```{r}
-idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf")
-idf
-```
-
-
 ### EnergyPlus config
-
-```{r include = FALSE}
-library(eplusr)
-```
-
---
 
 I want to install the latest version of EnergyPlus (currently 9.1)
 
@@ -605,7 +884,7 @@ avail_eplus()
 
 What if I installed EnergyPlus at a different location? Let's say `D:\software\EnergyPlusV9-0-1`.  Am I able to use that?
 
-```{r eval = FALSE}
+```{r use-eplus, eval = FALSE}
 use_eplus("D:/software/EnergyPlusV9-0-1")
 ```
 
