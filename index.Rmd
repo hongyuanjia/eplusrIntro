@@ -1,0 +1,624 @@
+---
+title: "Interfacing EnergyPlus using R"
+subtitle: "------ Intro to <code><font color='#7D88E8'>eplusr</font></code> R package<br><br>`r knitr::include_graphics('figure/logo.svg')`"
+author: "Hongyuan Jia"
+date: '2019-05-14 '
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    ratio: 16:9
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      navigation:
+        scroll: false # disable slide transitions by scrolling
+---
+
+name: self
+class: right, middle
+
+
+<!-- <br>Slides available at <http://bit.ly/infer-useR><br> -->
+<!-- <br>Package webpage at <https://hongyuanjia.github.io/eplusr> -->
+
+```{r initial, include = FALSE}
+library(knitr)
+opts_chunk$set(
+  comment = "#>",
+  fig.path = 'figure/', cache.path = 'cache/', fig.align = 'center',
+  fig.width = 12, fig.show = 'hold', fig.height = 8.5,
+  cache = TRUE, external = TRUE, dev = 'svglite'
+)
+
+options(htmltools.dir.version = FALSE)
+
+```
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_light(
+  base_color = "#23395b",
+  text_font_google   = google_font("Muli", "600", "600i"),
+  code_font_google   = google_font("Source Code Pro"),
+  header_h1_font_size = "45px",
+  link_color = "#7D88E8",
+  code_inline_font_size = "0.8em",
+  footnote_font_size = "0.6em",
+  footnote_position_bottom = "1em"
+)
+extra_css <- list(
+  ".red"   = list(color = "red"),
+  ".blue" = list(color = "#7D88E8"),
+  ".small" = list("font-size" = "90%"),
+  ".big" = list("font-size" = "50px"),
+  ".full-width" = list(
+    display = "flex",
+    width   = "100%",
+    flex    = "1 1 auto"
+  ),
+  ".scroll-output" = list(height = "80%", "overflow-y" = "scroll")
+)
+write_extra_css(extra_css)
+```
+
+<img class="circle" src="https://github.com/hongyuanjia.png" width="150px"/>
+
+# Find me at...
+
+[`r icon::fa(name = "twitter")` @jiahony](http://twitter.com/jiahony)
+
+[`r icon::fa(name = "github")` @hongyuanjia](http://github.com/hongyuanjia)
+
+[`r icon::fa(name = "envelope")` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
+
+---
+
+name: prerequiste
+class: middle, inverse
+
+
+# We assume:
+
+--
+
+### `r icon::fa("r-project")` &nbsp; You know R and are comfortable with command line
+
+--
+
+### <img src="figure/ep-nobg.png" width="6%" style="float:left"/>&nbsp; You know basic EnergyPlus, e.g. how to edit and run a model
+
+---
+
+## Why EnergyPlus?
+
+<img src="figure/ep-intro.png" align="center" />
+
+.footnote[Sources: https://energyplus.net/]
+
+---
+
+## Why EnergyPlus?
+
+<img src="figure/op-eco.png" width="90%" align="center" />
+
+.footnote[Sources: https://www.energy.gov/eere/buildings/downloads/openstudio-0]
+---
+
+## Why &nbsp;`r icon::fa("r-project")` ?
+
+.big[.center[.blue[Why not?]]]
+
+.center[<img src="figure/r-tiobe.png" width="70%" align="center" />]
+
+---
+
+## Why &nbsp;`r icon::fa("r-project")` ?
+
+<img src="figure/r4ds-book.png" width="10%" align="right" />
+
+R is great for machine learning, data visualization and analysis, and some areas of scientific computing.
+
+<br>
+<br>
+
+<img src="figure/r4ds.svg" width="90%" align="center" />
+
+
+.footnote[Sources: https://r4ds.had.co.nz/]
+
+---
+
+## Why &nbsp;`r icon::fa("r-project")` ?
+
+> The goal of reproducible research is to tie specific instructions to data analysis and experimental data so that scholarship can be recreated, better understood and verified.
+
+.pull-left[
+<img src="figure/rmd-book.png" width="70%" align="center" />
+]
+
+.pull-right[
+<img src="figure/rmd.png" width="95%" align="center" />
+]
+
+.footnote[
+Sources:
+https://cran.r-project.org/web/views/ReproducibleResearch.html;
+https://bookdown.org/yihui/rmarkdown/
+]
+
+---
+
+class: inverse middle center
+
+## `r icon::fa("flushed")` &nbsp; Wait! For Reading and Modifying IDF???
+
+## We already have IDF Editor!! Why bother ??
+
+--
+
+## Becase...
+
+--
+
+# .blue[Life is hard using EnergyPlus, sometimes &nbsp; `r icon::fa("grin-squint-tears")`]
+
+---
+
+## `r icon::fa("frown-open")` &nbsp; Sometimes you wish IDF Editor could do better when you rename an object...
+
+
+.center[<img src="figure/idfeditor-rename.png" width="60%" align="center" />]
+
+---
+
+## `r icon::fa("frown-open")` &nbsp; Sometimes you failed to recall what magics I did to create all those models...
+
+
+.center[<img src="figure/parametric.png" width="70%" align="center" />]
+
+---
+
+## `r icon::fa("frown-open")` &nbsp; Sometimes you accidently moved or deleted that "important" csv file used by your model...
+
+.center[<img src="figure/external-file.png" width="110%" align="center" />]
+
+---
+
+## `r icon::fa("frown-open")` &nbsp; Sometimes you want **REAL** date and time from EnergyPlus' output...
+
+.center[<img src="figure/datetime.png" width="25%" align="center" />]
+
+---
+
+## `r icon::fa("frown-open")` &nbsp; Sometimes you wish EnergyPlus could sperate key name and output variable for you...
+
+.center[<img src="figure/eplusout.png" width="85%" align="center" />]
+
+---
+
+## `r icon::fa("frown-open")` &nbsp; Sometimes you find it is better to show only the data in specific time...
+
+.center[<img src="figure/excel-line-graph.png" width="95%" align="center" />]
+
+---
+
+## `r icon::fa("frown-open")` &nbsp; Sometmes you don't have enough memory to paste all simulation data into a huge excel file...
+
+.center[<img src="figure/excel-no-mem.jpg" width="90%" align="center" />]
+
+---
+
+class: inverse middle center
+
+.animated.bounce[
+<img src="figure/logo.svg" height=280px>
+]
+
+## A Toolkit for Using EnergyPlus in R
+
+---
+
+## Features
+
+* Read, parse and modify EnergyPlus Input Data File (IDF)
+
+* Read, parse and modify EnergyPlus Weather File (EPW)
+
+* Query on models, including classes, objects and fields
+
+* Directly add, modify, duplicate, insert, and delete objects of IDF
+
+* Automatically change referenced fields when modifying objects
+
+* Save changed models into standard formats in the same way as IDFEditor distributed along with EnergyPlus
+
+* Run your models and collect the simulation output
+
+* Conduct parametric energy simulations and collect all results in one go
+
+---
+
+## Install and Load
+
+You can install the latest stable release of **eplusr** from CRAN.
+
+```{r cran-install, eval = FALSE}
+install.packages("eplusr")
+```
+
+**NOTE**: I refactored the implementation of main classes in eplusr `v0.10.0`. 
+If your eplusr version is lower than `v0.10.0`, please update it by simplily reinstall it.
+After install it, load eplusr by doing:
+
+```{r}
+library(eplusr)
+```
+
+---
+
+## Install and Load
+
+When loading, eplusr will try to find all EnergyPlus that are installed at the default location.
+
+
+```{r}
+avail_eplus()
+```
+
+What if your EnergyPlus installed at a custom location? Just add it:
+
+```{r eval = FALSE}
+use_eplus("your_fancy_path")
+```
+
+---
+
+## Install and Load
+
+To check if certain EnergyPlus is located by eplusr:
+
+```{r}
+is_avail_eplus(8.8)
+```
+
+You can install EnergyPlus using `install_eplus()`.
+
+```{r eval = FALSE}
+install_eplus(8.8)
+```
+
+**Note** that `install_eplus()` requires administrative privileges. You have to run R with administrator (or with sudo if you are on macOS or Linux) to make it work if you are not in interactive mode.
+
+You can also download the installer and install it by yourself:
+
+```{r eval = FALSE}
+download_eplus(8.8, dir = "where_to_save")
+```
+
+---
+
+## Imitate your workflow in IDF Editor
+
+.center[<img src="figure/idfeditor.png" width="95%" align="center" />]
+
+---
+
+## Read IDF
+
+.blue[\[`r icon::fa("question", size = 2)`\] How can I open an IDF file?]
+
+.scroll-output[
+```{r}
+(idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
+```
+]
+
+---
+
+## Nomenclature
+
+.center[<img src="figure/nomenclature.png" width="120%" align="left" />]
+
+<br>
+<br>
+
+- **`Group`** 
+    - `r icon::fa("sort-amount-down")` **`Class`**
+         - `r icon::fa("sort-amount-down")` **`Object`**
+             - `r icon::fa("sort-amount-down")` **`Field`**
+                  - `r icon::fa("sort-amount-down")` **`Value`** 
+
+---
+
+## Basic Info
+
+.blue[\[`r icon::fa("question", size = 2)`\] Where is my IDF?]
+
+```{r}
+idf$path()
+```
+
+--
+
+.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Location and Climate` related thing in my model?]
+
+```{r}
+idf$is_valid_group("Location and Climate")
+```
+
+--
+
+.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Schedule:Constant` object in my model?]
+
+```{r}
+idf$is_valid_class("Schedule:Constant")
+```
+
+---
+
+## Basic Info
+
+.blue[\[`r icon::fa("question", size = 2)`\] How many construction and zones are there in my model?]
+
+--
+
+```{r}
+idf$object_num(c("Construction", "Zone"))
+```
+
+--
+
+.blue[\[`r icon::fa("question", size = 2)`\] Every construction and zone should have a name. Can I get them?]
+
+```{r}
+idf$object_name(c("Construction", "Zone"))
+```
+
+---
+
+## Basic Info
+
+
+.blue[\[`r icon::fa("question", size = 2)`\] I don't think object in class `Version` has a name...]
+
+```{r}
+idf$object_name("Version")
+```
+
+--
+
+.blue[\[`r icon::fa("question", size = 2)`\] If so, how can I get distinguish objects that do not have names?]
+
+```{r}
+idf$object_id(c("Version", "Construction", "Zone"))
+```
+
+---
+
+## Object Query
+
+.blue[\[`r icon::fa("question", size = 2)`\] How can I see the contents of an object?]
+
+```{r}
+idf$object("wall-1")
+```
+
+--
+
+.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see all objects in class `Material`?]
+
+.scroll-output[
+```{r}
+idf$Material
+```
+]
+
+---
+
+## Object Query
+
+.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see both a construction and a material?]
+
+```{r}
+idf$objects("wall-1")
+```
+
+--
+
+.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see all objects in class `Material`?]
+
+.scroll-output[
+```{r}
+idf$Material
+```
+]
+
+
+---
+## Reproduce
+
+<img src="figure/final-doc.png" width="50%" align="left" />
+
+.pull-right[
+
+* Use version control
+* R Markdown
+]
+
+---
+
+## Reproduce
+
+## goal
+
+Simulation is not the goal, collecting the simulation results is.
+
+
+---
+
+## Validate
+
+<img src="figure/validate.png" width="95%" align="center" />
+
+
+
+## Using text editor, error checking. programically changing
+
+---
+
+## Other approach
+eppy:
+
+* Edit only one version of model. Lacking support for EPW. Lacking functions to collect results
+
+* openstudio. The powerhouse. Use its sketchup plugin to build building Geometry. Go for it if you love gui.
+
+* openstudio SDK. Highly inspired. Ruby binding. Too heavy. Ruby is not for data analysis.
+jeplus
+
+---
+
+## What is Group? Class? Object? Field? Value?
+
+<img src="figure/nomenclature.png" width="95%" align="center" />
+
+---
+
+## Tidy data
+
+csv screenshot, variable name
+
+A Toolkit for Using Whole Building Simulation Program 'EnergyPlus'
+
+Tidy data is a standard way of mapping the meaning of a dataset to its structure. A dataset is messy or tidy depending on how rows, columns and tables are matched up with observations, variables and types. In tidy data:
+
+* Each variable forms a column.
+
+* Each observation forms a row.
+
+* Each type of observational unit forms a table.
+
+EnergyPlus always gives untidy data.
+
+
+---
+
+## custom weather
+
+---
+
+## I can directly read my results from excel, why bother using eplusr?
+Parametric simulations
+Read all data into memory is expensive.
+
+`$report_data()` using SQL
+
+---
+
+## I can do all of this in IDF Editor, why bother `Idf` class?
+
+---
+
+## How can I change the weather data?
+Should compliance with the Runperiod headers and others
+
+---
+
+## I can directly read from Exel. The date time column. the start day of week
+
+---
+
+## Future plan
+
+* C++ parser for IDD, IDF, and EPW (Openstudio pics)
+
+* Integration with Stan
+
+* HVAC builder based on EnergyPlus example files
+
+* Eplusr Specific option header?
+
+* Version Updater
+
+* A Shiny-based GUI?
+
+---
+
+## Typical Workflow for A Building Energy Modeller
+
+---
+
+## Class structure
+
+.pull-left[
+* `Idd` class --> Model definition
+
+* `Idd` class --> Model itself
+
+* `Epw` class --> Weather file
+
+* `EPlusJob` class --> Single simulation
+
+* `ParametricJob` class --> Parametric simulations
+]
+
+.pull-right[
+![](figure/class_structure.png)
+]
+
+---
+
+## Read EnergyPlus Model
+
+***How can I read an EnergyPlus model?***
+
+```{r}
+idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf")
+idf
+```
+
+
+### EnergyPlus config
+
+```{r include = FALSE}
+library(eplusr)
+```
+
+--
+
+I want to install the latest version of EnergyPlus (currently 9.1)
+
+```{r eval = FALSE}
+install_eplus()
+```
+
+--
+What versions of EnergyPlus have been install on my computer?
+
+```{r}
+avail_eplus()
+```
+
+--
+
+What if I installed EnergyPlus at a different location? Let's say `D:\software\EnergyPlusV9-0-1`.  Am I able to use that?
+
+```{r eval = FALSE}
+use_eplus("D:/software/EnergyPlusV9-0-1")
+```
+
+---
+
+### Read an example file
+
+
+---
+
+## Implementation detailed
+
+Use vim to show. Demo
+
+
+## Contributors
