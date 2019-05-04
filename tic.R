@@ -1,10 +1,11 @@
 get_stage("before_install") %>%
     add_code_step(update.packages(ask = FALSE))
 
-if (Sys.getenv("id_rsa") != "") {
-    get_stage("install") %>%
-        step_install_github(c("gadenbuie/xaringanthemer", "ropenscilabs/icon"))
+get_stage("install") %>%
+     step_install_github(c("gadenbuie/xaringanthemer", "ropenscilabs/icon"))
 
+
+if (Sys.getenv("id_rsa") != "") {
     get_stage("before_deploy") %>%
         add_step(step_setup_ssh())
 
