@@ -1,7 +1,7 @@
 Package: eplusrIntro
 Title: Interfacing EnergyPlus Using R -- Intro to 'eplusr' Package
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     person(given = "Hongyuan",
            family = "Jia",
            role = c("aut", "cre"),
@@ -11,13 +11,13 @@ Description: Interfacing EnergyPlus Using R -- Intro to 'eplusr' Package.
 License: CC0
 Encoding: UTF-8
 LazyData: true
-Imports: 
+Imports:
     eplusr,
     xaringan,
     knitr,
     xaringanthemer (>= 0.2.0),
-    icon (>= 0.1.0)
-Remotes: 
+    fontawesome (>= 0.1.0)
+Remotes:
     gadenbuie/xaringanthemer,
-    ropenscilabs/icon
+    rstudio/fontawesome
 URL: https://github.com/hongyuanjia/eplusrIntro

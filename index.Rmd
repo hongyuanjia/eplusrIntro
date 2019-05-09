@@ -25,24 +25,25 @@ class: right, middle
 
 ```{r initial, include = FALSE}
 library(knitr)
+library(fontawesome)
 opts_chunk$set(
   comment = "#>",
-  fig.path = 'figure/', cache.path = 'cache/', fig.align = 'center',
-  fig.width = 12, fig.show = 'hold', fig.height = 8.5,
-  cache = FALSE, external = TRUE, dev = 'svglite'
+  fig.path = "figure/", cache.path = "cache/", fig.align = "center",
+  fig.width = 12, fig.show = "hold", fig.height = 8.5,
+  cache = FALSE, external = TRUE, dev = "svglite"
 )
 
-hook_output <- knitr::knit_hooks$get('output')
+hook_output <- knitr::knit_hooks$get("output")
 knit_hooks$set(output = function(x, options) {
   if (!is.null(n <- options$out.lines)) {
-    x <- unlist(strsplit(x, '\n', fixed = TRUE))
+    x <- unlist(strsplit(x, "\n", fixed = TRUE))
     if (length(x) > n) {
       # truncate the output
-      x <- c(head(x, n), '....', '')
+      x <- c(head(x, n), "....", "")
     } else {
       x <- c(x, "")
     }
-    x <- paste(x, collapse = '\n') # paste first n lines together
+    x <- paste(x, collapse = "\n") # paste first n lines together
   }
   hook_output(x, options)
 })
@@ -98,7 +99,7 @@ class: middle, inverse
 
 --
 
-### `r icon::fa("r-project")` &nbsp; You know R and are comfortable with command line
+### `r icon::fa("r-project")` &nbsp; You know R and are comfortable with R programming
 
 --
 
