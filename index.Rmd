@@ -19,10 +19,6 @@ output:
 name: self
 class: right, middle
 
-
-<!-- <br>Slides available at <http://bit.ly/infer-useR><br> -->
-<!-- <br>Package webpage at <https://hongyuanjia.github.io/eplusr> -->
-
 ```{r initial, include = FALSE}
 library(knitr)
 library(fontawesome)
@@ -85,11 +81,11 @@ write_extra_css(extra_css)
 
 # Find me at...
 
-[`r fa(name = "twitter")` @jiahony](http://twitter.com/jiahony)
+[`r fa(name = "twitter", fill = blue)` @jiahony](http://twitter.com/jiahony)
 
-[`r fa(name = "github")` @hongyuanjia](http://github.com/hongyuanjia)
+[`r fa(name = "github", fill = blue)` @hongyuanjia](http://github.com/hongyuanjia)
 
-[`r fa(name = "envelope")` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
+[`r fa(name = "envelope", fill = blue)` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
 
 ---
 
@@ -101,7 +97,7 @@ class: middle, inverse
 
 --
 
-### `r fa("r-project")` &nbsp; You know R and are comfortable with R programming
+### `r fa("r-project", fill = "white")` &nbsp; You know R and are comfortable with R programming
 
 --
 
@@ -150,7 +146,9 @@ R is great for machine learning, data visualization and analysis, and some areas
 
 ## Why &nbsp;`r fa("r-project")` ?
 
-> The goal of reproducible research is to tie specific instructions to data analysis and experimental data so that scholarship can be recreated, better understood and verified.
+> The goal of reproducible research is to tie specific instructions to data
+> analysis and experimental data so that scholarship can be recreated, better
+> understood and verified.
 
 .pull-left[
 <img src="figure/rmd-book.png" width="70%" align="center" />
@@ -170,9 +168,9 @@ https://bookdown.org/yihui/rmarkdown/
 
 class: inverse middle center
 
-## `r fa("flushed")` &nbsp; Wait! For Reading and Modifying IDF???
+## `r fa("flushed")` &nbsp; Wait! We already have OpenStudio and IDF Editor!!
 
-## We already have OpenStudio and IDF Editor!! Why bother ??
+## Why bother ??
 
 --
 
@@ -333,10 +331,14 @@ class: inverse middle center
 
 .blue[\[`r fa("question")`\] How can I open an IDF file?]
 
-```{r read-idf, out.lines=10}
-(idf <- read_idf(here::here("materials/5ZoneWaterLoopHeatPump.idf")))
+```{r read-idf, eval = FALSE}
+(idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
 ```
 
+```{r read-idf-raw, out.ines = 10, echo = FALSE}
+path_idf <- "https://raw.githubusercontent.com/hongyuanjia/eplusrIntro/master/materials/5ZoneWaterLoopHeatPump.idf"
+(idf <- read_idf(path_idf))
+```
 ---
 
 ## Nomenclature
