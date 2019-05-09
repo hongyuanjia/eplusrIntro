@@ -16,7 +16,8 @@ Imports:
     xaringan,
     knitr,
     xaringanthemer (>= 0.2.0),
-    fontawesome (>= 0.1.0)
+    fontawesome (>= 0.1.0),
+    here
 Remotes:
     gadenbuie/xaringanthemer,
     rstudio/fontawesome

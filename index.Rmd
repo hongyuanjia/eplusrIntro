@@ -334,7 +334,7 @@ class: inverse middle center
 .blue[\[`r fa("question")`\] How can I open an IDF file?]
 
 ```{r read-idf, out.lines=10}
-(idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
+(idf <- read_idf(here::here("materials/5ZoneWaterLoopHeatPump.idf")))
 ```
 
 ---
