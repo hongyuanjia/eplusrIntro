@@ -52,20 +52,22 @@ options(htmltools.dir.version = FALSE)
 ```
 
 ```{r xaringan-themer, include = FALSE}
+blue <- "#7D88E8"
+
 library(xaringanthemer)
 mono_light(
   base_color = "#23395b",
   text_font_google   = google_font("Muli", "600", "600i"),
   code_font_google   = google_font("Source Code Pro"),
   header_h1_font_size = "45px",
-  link_color = "#7D88E8",
+  link_color = blue,
   code_inline_font_size = "0.8em",
   footnote_font_size = "0.6em",
   footnote_position_bottom = "1em"
 )
 extra_css <- list(
   ".red"   = list(color = "red"),
-  ".blue" = list(color = "#7D88E8"),
+  ".blue" = list(color = blue),
   ".small" = list("font-size" = "90%"),
   ".big" = list("font-size" = "50px"),
   ".full-width" = list(
@@ -83,11 +85,11 @@ write_extra_css(extra_css)
 
 # Find me at...
 
-[`r icon::fa(name = "twitter")` @jiahony](http://twitter.com/jiahony)
+[`r fa(name = "twitter")` @jiahony](http://twitter.com/jiahony)
 
-[`r icon::fa(name = "github")` @hongyuanjia](http://github.com/hongyuanjia)
+[`r fa(name = "github")` @hongyuanjia](http://github.com/hongyuanjia)
 
-[`r icon::fa(name = "envelope")` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
+[`r fa(name = "envelope")` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
 
 ---
 
@@ -99,7 +101,7 @@ class: middle, inverse
 
 --
 
-### `r icon::fa("r-project")` &nbsp; You know R and are comfortable with R programming
+### `r fa("r-project")` &nbsp; You know R and are comfortable with R programming
 
 --
 
@@ -122,7 +124,7 @@ class: middle, inverse
 .footnote[Sources: https://www.energy.gov/eere/buildings/downloads/openstudio-0]
 ---
 
-## Why &nbsp;`r icon::fa("r-project")` ?
+## Why &nbsp;`r fa("r-project")` ?
 
 .big[.center[.blue[Why not?]]]
 
@@ -130,7 +132,7 @@ class: middle, inverse
 
 ---
 
-## Why &nbsp;`r icon::fa("r-project")` ?
+## Why &nbsp;`r fa("r-project")` ?
 
 <img src="figure/r4ds-book.png" width="10%" align="right" />
 
@@ -146,7 +148,7 @@ R is great for machine learning, data visualization and analysis, and some areas
 
 ---
 
-## Why &nbsp;`r icon::fa("r-project")` ?
+## Why &nbsp;`r fa("r-project")` ?
 
 > The goal of reproducible research is to tie specific instructions to data analysis and experimental data so that scholarship can be recreated, better understood and verified.
 
@@ -168,9 +170,9 @@ https://bookdown.org/yihui/rmarkdown/
 
 class: inverse middle center
 
-## `r icon::fa("flushed")` &nbsp; Wait! For Reading and Modifying IDF???
+## `r fa("flushed")` &nbsp; Wait! For Reading and Modifying IDF???
 
-## We already have IDF Editor!! Why bother ??
+## We already have OpenStudio and IDF Editor!! Why bother ??
 
 --
 
@@ -178,49 +180,49 @@ class: inverse middle center
 
 --
 
-# .blue[Life is hard using EnergyPlus, sometimes &nbsp; `r icon::fa("grin-squint-tears")`]
+# .blue[Life is hard using OpenStudio and EnergyPlus, sometimes &nbsp; `r fa("grin-squint-tears")`]
 
 ---
 
-## `r icon::fa("frown-open")` &nbsp; Sometimes you wish IDF Editor could do better when you rename an object...
+## `r fa("frown-open")` &nbsp; Sometimes you wish IDF Editor could do better when you rename an object...
 
 
 .center[<img src="figure/idfeditor-rename.png" width="60%" align="center" />]
 
 ---
 
-## `r icon::fa("frown-open")` &nbsp; Sometimes you failed to recall what magics I did to create all those models...
+## `r fa("frown-open")` &nbsp; Sometimes you failed to recall what magics I did to create all those models...
 
 
 .center[<img src="figure/parametric.png" width="70%" align="center" />]
 
 ---
 
-## `r icon::fa("frown-open")` &nbsp; Sometimes you accidently moved or deleted that "important" csv file used by your model...
+## `r fa("frown-open")` &nbsp; Sometimes you accidently moved or deleted that "important" csv file used by your model...
 
 .center[<img src="figure/external-file.png" width="110%" align="center" />]
 
 ---
 
-## `r icon::fa("frown-open")` &nbsp; Sometimes you want **REAL** date and time from EnergyPlus' output...
+## `r fa("frown-open")` &nbsp; Sometimes you want **REAL** date and time from EnergyPlus' output...
 
 .center[<img src="figure/datetime.png" width="25%" align="center" />]
 
 ---
 
-## `r icon::fa("frown-open")` &nbsp; Sometimes you wish EnergyPlus could sperate key name and output variable for you...
+## `r fa("frown-open")` &nbsp; Sometimes you wish EnergyPlus could sperate key name and output variable for you...
 
 .center[<img src="figure/eplusout.png" width="85%" align="center" />]
 
 ---
 
-## `r icon::fa("frown-open")` &nbsp; Sometimes you find it is better to show only the data in specific time...
+## `r fa("frown-open")` &nbsp; Sometimes you find it is better to show only the data in specific time...
 
 .center[<img src="figure/excel-line-graph.png" width="95%" align="center" />]
 
 ---
 
-## `r icon::fa("frown-open")` &nbsp; Sometmes you don't have enough memory to paste all simulation data into a huge excel file...
+## `r fa("frown-open")` &nbsp; Sometmes you don't have enough memory to paste all simulation data into a huge excel file...
 
 .center[<img src="figure/excel-no-mem.jpg" width="90%" align="center" />]
 
@@ -329,7 +331,7 @@ class: inverse middle center
 
 ## Read IDF
 
-.blue[\[`r icon::fa("question", size = 2)`\] How can I open an IDF file?]
+.blue[\[`r fa("question")`\] How can I open an IDF file?]
 
 ```{r read-idf, out.lines=10}
 (idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
@@ -339,7 +341,7 @@ class: inverse middle center
 
 ## Nomenclature
 
-.blue[\[`r icon::fa("question", size = 2)`\] How does `Group` and `Class` mean?]
+.blue[\[`r fa("question")`\] How does `Group` and `Class` mean?]
 
 .center[<img src="figure/nomenclature.png" width="120%" align="left" />]
 
@@ -349,7 +351,7 @@ class: inverse middle center
 
 ## Basic Info
 
-.blue[\[`r icon::fa("question", size = 2)`\] Where is my IDF?]
+.blue[\[`r fa("question")`\] Where is my IDF?]
 
 ```{r}
 idf$path()
@@ -357,7 +359,7 @@ idf$path()
 
 --
 
-.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Location and Climate` related thing in my model?]
+.blue[\[`r fa("question")`\] Is there any `Location and Climate` related thing in my model?]
 
 --
 
@@ -367,7 +369,7 @@ idf$is_valid_group("Location and Climate")
 
 --
 
-.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Schedule:Constant` object in my model?]
+.blue[\[`r fa("question")`\] Is there any `Schedule:Constant` object in my model?]
 
 --
 
@@ -379,7 +381,7 @@ idf$is_valid_class("Schedule:Constant")
 
 ## Basic Info
 
-.blue[\[`r icon::fa("question", size = 2)`\] How can I get all names of existing groups and classes in my model?]
+.blue[\[`r fa("question")`\] How can I get all names of existing groups and classes in my model?]
 
 --
 
@@ -392,7 +394,7 @@ str(idf$class_name())
 
 ## Basic Info
 
-.blue[\[`r icon::fa("question", size = 2)`\] How can I get all names of existing groups and classes defined by EnergyPlus?]
+.blue[\[`r fa("question")`\] How can I get all names of existing groups and classes defined by EnergyPlus?]
 
 --
 
@@ -405,7 +407,7 @@ str(idf$class_name(all = TRUE))
 
 ## Basic Info
 
-.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Location and Climate` related thing in my model?]
+.blue[\[`r fa("question")`\] Is there any `Location and Climate` related thing in my model?]
 
 --
 
@@ -415,7 +417,7 @@ idf$is_valid_group("Location and Climate")
 
 --
 
-.blue[\[`r icon::fa("question", size = 2)`\] Is there any `Schedule:Constant` object in my model?]
+.blue[\[`r fa("question")`\] Is there any `Schedule:Constant` object in my model?]
 
 --
 
@@ -427,7 +429,7 @@ idf$is_valid_class("Schedule:Constant")
 
 ## Basic Info
 
-.blue[\[`r icon::fa("question", size = 2)`\] How many construction and zones are there in my model?]
+.blue[\[`r fa("question")`\] How many construction and zones are there in my model?]
 
 --
 
@@ -437,7 +439,7 @@ idf$object_num(c("Construction", "Zone"))
 
 --
 
-.blue[\[`r icon::fa("question", size = 2)`\] Every construction and zone should have a name. Can I get them?]
+.blue[\[`r fa("question")`\] Every construction and zone should have a name. Can I get them?]
 
 --
 
@@ -450,7 +452,7 @@ idf$object_name(c("Construction", "Zone"))
 ## Basic Info
 
 
-.blue[\[`r icon::fa("question", size = 2)`\] I don't think object in class `Version` has a name...]
+.blue[\[`r fa("question")`\] I don't think object in class `Version` has a name...]
 
 --
 
@@ -460,7 +462,7 @@ idf$object_name("Version")
 
 --
 
-.blue[\[`r icon::fa("question", size = 2)`\] If so, how can I distinguish objects that do not have names?]
+.blue[\[`r fa("question")`\] If so, how can I distinguish objects that do not have names?]
 
 --
 
@@ -472,7 +474,7 @@ idf$object_id(c("Version", "Construction", "Zone"))
 
 ## Object Query
 
-.blue[\[`r icon::fa("question", size = 2)`\] How can I see if a material is used by other constructions?]
+.blue[\[`r fa("question")`\] How can I see if a material is used by other constructions?]
 
 --
 
@@ -484,7 +486,7 @@ idf$object_relation("wd01")
 
 ## Object Query
 
-.blue[\[`r icon::fa("question", size = 2)`\] How can I see the contents of an object?]
+.blue[\[`r fa("question")`\] How can I see the contents of an object?]
 
 --
 
@@ -496,7 +498,7 @@ idf$object("wall-1")
 
 ## Object Query
 
-.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see all objects in class `Material`?]
+.blue[\[`r fa("question")`\] What if I want to see all objects in class `Material`?]
 
 --
 
@@ -508,7 +510,7 @@ idf$Material
 
 ## Object Query
 
-.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see both a construction and a material?]
+.blue[\[`r fa("question")`\] What if I want to see both a construction and a material?]
 
 --
 
@@ -520,7 +522,7 @@ idf$objects(c("wall-1", "wd01"))
 
 ## Object Query
 
-.blue[\[`r icon::fa("question", size = 2)`\] What if I want to see a material and all constructions that use it?]
+.blue[\[`r fa("question")`\] What if I want to see a material and all constructions that use it?]
 
 --
 
@@ -532,7 +534,7 @@ idf$objects_in_relation("wd01", "ref_by")
 
 ## Object Query
 
-.blue[\[`r icon::fa("question", size = 2)`\] But those construction may be also used in surfaces. Can I get all objects that has some relations with that material?]
+.blue[\[`r fa("question")`\] But those construction may be also used in surfaces. Can I get all objects that has some relations with that material?]
 
 --
 
@@ -558,7 +560,7 @@ idf$add(
 
 ## Definition
 
-.blue[\[`r icon::fa("question", size = 2)`\] But how can I remember all field names?]
+.blue[\[`r fa("question")`\] But how can I remember all field names?]
 
 --
 
@@ -571,7 +573,7 @@ mat_def
 
 ## Definition
 
-.blue[\[`r icon::fa("question", size = 2)`\] I don't want to copy from the console!]
+.blue[\[`r fa("question")`\] I don't want to copy from the console!]
 
 --
 
@@ -583,7 +585,7 @@ mat_def$field_name()
 
 ## Definition
 
-.blue[\[`r icon::fa("question", size = 2)`\] So I guess there should be other data I can get from `mat_def`...]
+.blue[\[`r fa("question")`\] So I guess there should be other data I can get from `mat_def`...]
 
 --
 
@@ -646,7 +648,7 @@ idf$paste()
 
 ## Load Objects
 
-.blue[\[`r icon::fa("question", size = 2)`\] I love copy-- paste...]
+.blue[\[`r fa("question")`\] I love copy-- paste...]
 
 --
 
@@ -700,7 +702,7 @@ idf$load(c(
 
 ## Load Objects
 
-.blue[\[`r icon::fa("question", size = 2)`\] You know, R is fameous for `data.frame`...]
+.blue[\[`r fa("question")`\] You know, R is fameous for `data.frame`...]
 
 --
 
@@ -717,7 +719,7 @@ idf$load(
 
 ## Data Extraction
 
-.blue[\[`r icon::fa("question", size = 2)`\] No one would like to manually create that string or data.frame...]
+.blue[\[`r fa("question")`\] No one would like to manually create that string or data.frame...]
 
 --
 
@@ -735,7 +737,7 @@ kable(idf$to_table("mat_renamed"))
 
 ## Insert Objects
 
-.blue[\[`r icon::fa("question", size = 2)`\] What if I want to directly insert objects from another `Idf`?]
+.blue[\[`r fa("question")`\] What if I want to directly insert objects from another `Idf`?]
 
 --
 
@@ -755,7 +757,7 @@ idf$del("mat_renamed")
 
 ## Delete Objects
 
-.blue[\[`r icon::fa("question", size = 2)`\] What if I want to delete the material and all constructions that use it?]
+.blue[\[`r fa("question")`\] What if I want to delete the material and all constructions that use it?]
 
 ```{r, error=TRUE}
 idf$del("mat_renamed", .ref_by = TRUE)
