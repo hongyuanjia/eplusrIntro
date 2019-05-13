@@ -325,7 +325,9 @@ download_eplus(8.8, dir = "where_to_save")
 
 class: inverse middle center
 
-.center[.big[`Idf`]]
+# .blue[Idf] Class
+
+### Modify EnergyPlus model
 
 ---
 
@@ -923,6 +925,14 @@ align_roof_r_value(idf, 5)
 
 ---
 
+class: inverse middle center
+
+# .blue[EplusJob] Class
+
+### Run and Collect Output
+
+---
+
 ## Run and Collect Output
 
 .blue[\[`r fa_question()`\] Finally! How can I run my simulaion?]
@@ -930,8 +940,17 @@ align_roof_r_value(idf, 5)
 ```{r run, out.lines = 14}
 path_epw <- file.path("materials/USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
 idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf")
-job <- idf$run(path_epw, dir = tempdir())
 
+# make sure objects in `RunPeriod` class take effect
+idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
+# save the model before run
+idf$save(file.path(tempdir(), "example.idf"), overwrite = TRUE)
+```
+
+---
+
+```{r}
+job <- idf$run(path_epw, dir = tempdir())
 ```
 
 ---
@@ -1015,7 +1034,7 @@ str(first_line)
 
 .blue[Get all available report variable keys and names]
 
-```{r, eval = FALSE}
+```{r}
 str(job$report_data_dict())
 ```
 
@@ -1039,9 +1058,9 @@ job$report_data("space1-1", "zone air temperature")
 
 .blue[Directly use `$report_data_dict()` to extract results]
 
-```{r, eval = FALSE}
+```{r}
 dict <- job$report_data_dict()
-job$report_data(dict[is_meter == 1])
+str(job$report_data(dict[is_meter == 1]))
 ```
 
 ---
@@ -1070,10 +1089,35 @@ lubridate::tz(job$report_data(tz = "Asia/Singapore")$datetime)
 
 ---
 
-.blue[Make sure start day of week matches]
+.blue[Make sure start day of week matches!]
+
+.pull-left[
+```{r}
+idf$RunPeriod[[1]]$value(1:6)
+```
+]
+
+.pull-right[
+```{r}
+idf$RunPeriod[[2]]$value(1:6)
+```
+]
+
+---
+
+```{r, out.lines = 20}
+idf$object("clg-setp-sch")
+```
+
+---
 
 ```{r}
-(job$report_data(tz = "Asia/Singapore")$datetime)
+temp <- job$report_data("space1-1", "zone air temperature", all = TRUE, year = 2018)
+library(ggplot2)
+temp %>%
+  ggplot() +
+  geom_line(aes(datetime, value)) +
+  facet_wrap(vars(month, day), labeller = "label_both", scales = "free_x")
 ```
 
 ---
