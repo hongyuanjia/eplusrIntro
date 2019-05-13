@@ -13,10 +13,18 @@ construction_r_value <- function (construction) {
     sum(each_r)
 }
 
-# helper to increase or decrease the thickness of insulation layer if necessary
-adjust_insulation <- function (insulation, current_r_value, expect_r_value) {
+# helper to find the material layer with largest R value in a construction
+material_largest_r <- function (construction) {
+    mat <- construction$ref_to_object()
+    each_r <- map_dbl(mat, material_r_value)
+    mat[[which.max(each_r)]]
+}
+
+# helper to increase or decrease the thickness of layer if necessary
+adjust_thickness <- function (material, current_r_value, expect_r_value) {
     distance <- expect_r_value - current_r_value
-    insulation$Thickness <- distance * insulation$Conductivity + insulation$Thickness
+    material$Thickness <- distance * material$Conductivity + material$Thickness
+    material
 }
 
 align_roof_r_value <- function (idf, expect_r_value = 4) {
@@ -43,11 +51,11 @@ align_roof_r_value <- function (idf, expect_r_value = 4) {
 
         const_to_modify <- const_r[const_r != expect_r_value]
 
-        # get insulation layer of each construction
-        insulation <- map(idf$objects(names(const_to_modify)), ~.x$ref_to_object("Outside Layer")[[1L]])
+        # get layer with largest R value of each construction
+        mat <- names(const_to_modify) %>% idf$objects() %>% map(material_largest_r)
 
         # add thickness
-        walk2(insulation, const_to_modify, adjust_insulation, expect_r_value = expect_r_value)
+        walk2(mat, const_to_modify, adjust_thickness, expect_r_value = expect_r_value)
     }
 
     # show final R values

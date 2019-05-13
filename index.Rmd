@@ -25,7 +25,7 @@ opts_chunk$set(
   comment = "#>",
   fig.path = "figure/", fig.align = "center",
   fig.width = 12, fig.show = "hold", fig.height = 8.5,
-  cache = TRUE
+  cache = FALSE
 )
 
 hook_output <- knitr::knit_hooks$get("output")
@@ -181,9 +181,9 @@ class: inverse middle center
 
 ---
 
-## `r fa("frown-open")` &nbsp; Sometimes you do not want to learn a new programming language Ruby just for getting familar with OpenStudio Ruby API ...
+## `r fa("frown-open")` &nbsp; Sometimes you do not want to learn a new programming language, just for getting familar with OpenStudio Ruby API ...
 
-.center[<img src="figure/measure.png" width="60%" align="center" />]
+.center[<img src="figure/measure.png" width="65%" align="center" />]
 
 ---
 
@@ -327,7 +327,7 @@ class: inverse middle center
 
 # .blue[Idf] Class
 
-### Modify EnergyPlus model
+### Modify EnergyPlus Model
 
 ---
 
@@ -794,7 +794,7 @@ idf$to_table("mat_renamed")
 --
 
 ```{r}
-ddy <- read_idf(file.path("materials/USA_CA_San.Francisco.Intl.AP.724940_TMY3.ddy"), 8.8)
+ddy <- read_idf(file.path("materials/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.ddy"), 8.8)
 
 names(idf$insert(ddy$SizingPeriod_DesignDay))
 ```
@@ -902,7 +902,7 @@ class: middle, inverse
 ```{r}
 source("measures/rotate.R")
 
-rotate_builiding(idf, 30)
+rotate_building(idf, 30)
 ```
 
 ---
@@ -938,18 +938,19 @@ class: inverse middle center
 .blue[\[`r fa_question()`\] Finally! How can I run my simulaion?]
 
 ```{r run, out.lines = 14}
-path_epw <- file.path("materials/USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
 idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf")
 
 # make sure objects in `RunPeriod` class take effect
 idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
+
 # save the model before run
 idf$save(file.path(tempdir(), "example.idf"), overwrite = TRUE)
 ```
 
 ---
 
-```{r}
+```{r, out.lines = 20}
+path_epw <- file.path("materials/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
 job <- idf$run(path_epw, dir = tempdir())
 ```
 
@@ -1111,7 +1112,7 @@ idf$object("clg-setp-sch")
 
 ---
 
-```{r}
+```{r, fig.height = 6, out.height="50%"}
 temp <- job$report_data("space1-1", "zone air temperature", all = TRUE, year = 2018)
 library(ggplot2)
 temp %>%
@@ -1124,15 +1125,16 @@ temp %>%
 
 .blue[Precisely control time period]
 
-Get the total cooling rate power of AHU named `Heat Pumpa Cooling Mode AHU1` at
+Get the total cooling rate power of AHU named `Heat Pump Cooling Mode AHU1` at
 11 a.m for the first day of all runperiod, tag this simulation as case
 `example`, and return all possible output columns.
 
-```{r, eval = FALSE}
+```{r, out.lines = 10}
 job$report_data(
   key_value = "heat pump cooling mode ahu1",
   name = "cooling coil total cooling rate", case = "example",
-  all = TRUE, simulation_days = 1, hour = 11, minute = 0)
+  all = TRUE, simulation_days = 1, hour = 11, minute = 0) %>%
+str()
 ```
 
 ---
@@ -1153,86 +1155,409 @@ job$tabular_data(
 
 ---
 
-## Reproduce
+## Other useful data you can retrieve from EnergyPlus SQL output
 
-<img src="figure/final-doc.png" width="50%" align="left" />
+.blue[Get summary data of all materials]
 
-.pull-right[
+```{r}
+str(job$read_table("Materials"))
+```
 
-* Use version control
-* R Markdown
+---
+
+.blue[Get summary data of all constructions]
+
+```{r}
+str(job$read_table("Constructions"))
+```
+
+---
+
+.blue[Get summary data of all surfaces]
+
+```{r}
+str(job$read_table("Surfaces"))
+```
+
+---
+
+.blue[Get summary data of all zones]
+
+```{r}
+str(job$read_table("Zones"))
+```
+
+---
+
+.blue[Other resources]
+
+```{r}
+job$list_table()
+```
+
+---
+
+class: inverse middle center
+
+# .blue[ParametricJob] Class
+
+### Conduct Parametric Simulations
+
+---
+
+## Create a parametric job
+
+```{r}
+param <- param_job(idf, "materials/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
+param
+```
+---
+
+## Apply measures
+
+.blue[Apply a single measure]
+
+```{r}
+rotate <- function (idf, degree) {
+    rotate_building(idf, degree)
+    idf
+}
+
+param$apply_measure(rotate, seq(0, 180, 30), .names = paste0("degree_", seq(0, 180, 30)))
+```
+
+---
+
+.blue[Apply multiple measures]
+
+```{r}
+# get all combinations
+comb <- cross_df(list(degree = seq(0, 180, 60), r_value = c(3.55, 3.7)))
+comb$name <- paste("case", comb$degree, comb$r_value, sep = "_")
+
+rotate_and_align_r_value <- function (idf, degree, expect_r_value) {
+    rotate_building(idf, degree)
+
+    align_roof_r_value(idf, expect_r_value)
+
+    idf
+}
+
+param$apply_measure(rotate_and_align_r_value, comb$degree, comb$r_value, .names = comb$name)
+```
+
+---
+
+## Run Parametric Simulations
+
+```{r, results = "hide"}
+param$run(tempdir())
+```
+
+---
+
+## Extract Simulation Output
+
+```{r, out.lines = 18}
+param$errors()
+```
+
+---
+
+.blue[Does building orientation and roof thermal property influence sensible cooling loads??]
+
+```{r, eval = FALSE}
+cooling_rate <- param$report_data(NULL, name = "Zone Air System Sensible Cooling Rate", month = 7, all = TRUE)
+
+# exclude design day data
+cooling_rate_nodes <- cooling_rate[!grepl("DesignDay", day_type)]
+
+# plot
+cooling_rate_nodes %>%
+    ggplot() +
+    geom_line(aes(datetime, value, group = case, color = case)) +
+    facet_wrap(vars(key_value)) +
+    scale_y_continuous(name = "Air System Sensible Cooling Rate / W")
+```
+
+---
+
+```{r, echo = FALSE}
+cooling_rate <- param$report_data(NULL, name = "Zone Air System Sensible Cooling Rate", month = 7, all = TRUE)
+
+# exclude design day data
+cooling_rate_nodes <- cooling_rate[!grepl("DesignDay", day_type)]
+
+# plot
+cooling_rate_nodes %>%
+    ggplot() +
+    geom_line(aes(datetime, value, group = case, color = case)) +
+    facet_wrap(vars(key_value)) +
+    scale_y_continuous(name = "Air System Sensible Cooling Rate / W")
+```
+
+---
+
+class: inverse middle center
+
+# .blue[Epw] Class
+
+### Modify EnergyPlus Weather
+
+---
+
+## Read EPW file
+
+```{r}
+epw <- read_epw(path_epw)
+epw
+```
+
+---
+
+## Query and Modify Headers
+
+.blue[Get location data]
+
+```{r}
+str(epw$location())
+```
+
+---
+
+.blue[Modify location data]
+
+```{r}
+str(epw$location(city = "my_city", state_province = "my_state", country = "my_country"))
+```
+
+---
+
+.blue[Get design condition data]
+
+```{r, out.lines = 15}
+str(epw$design_condition())
+```
+
+---
+
+```{r, out.lines = 15}
+epw$typical_extreme_period()
+```
+
+---
+
+```{r, out.lines = 15}
+str(epw$ground_temperature())
+```
+
+---
+
+.blue[Get leap year flag, daylight saving time and holidays]
+
+```{r, out.lines = 15}
+epw$holiday()
+```
+
+---
+
+.blue[Add daylight saving time period]
+
+```{r, out.lines = 15}
+epw$holiday(dst = c("3.10", "11.3"))
+epw$holiday(dst = c("2nd Sunday in March", "1st Sunday in November"))
+```
+
+---
+
+.blue[Add holidays]
+
+```{r, out.lines = 15}
+epw$holiday(holiday = list(name = c("New Year's Day", "Christmas Day"), day = c("1.1", "25 Dec")))
+```
+
+---
+
+.blue[Get and modify comments]
+
+```{r, out.lines = 15}
+epw$comment1()
+epw$comment2()
+```
+
+```{r, out.lines = 15}
+epw$comment1("new comment1")
+epw$comment2("new comment2")
+```
+
+---
+
+.blue[Get total number of data periods]
+
+```{r, out.lines = 15}
+epw$num_period()
+```
+
+--
+
+.blue[Get number of observations per hour]
+
+```{r, out.lines = 15}
+epw$interval()
+```
+
+--
+
+.blue[Get data period]
+
+```{r, out.lines = 15}
+epw$period()
+```
+
+---
+
+## Weather Data Specifications
+
+```{r, out.lines = 15}
+str(epw$missing_code())
+```
+
+---
+
+```{r, out.lines = 15}
+str(epw$initial_missing_value())
+```
+
+---
+
+```{r, out.lines = 15}
+epw$range_exist()
+```
+
+---
+
+```{r, out.lines = 15}
+epw$range_valid()
+```
+
+---
+
+```{r, out.lines = 15}
+epw$fill_action("missing")
+```
+
+---
+
+```{r, out.lines = 15}
+epw$fill_action("out_of_range")
+```
+
+---
+
+## Get Weather Data
+
+```{r, out.lines = 15}
+str(epw$data(1))
+```
+
+---
+
+```{r, out.lines = 15}
+weekdays(epw$data(1)$datetime[[1]])
+epw$period(1)$start_day_of_week
+```
+
+---
+
+## Get Abnormal Weather Data
+
+```{r, out.lines = 15}
+epw$abnormal_data(keep_all = FALSE)
+```
+
+---
+
+## Get Redundant Weather Data
+
+```{r, out.lines = 15}
+epw$redundant_data()
+```
+
+---
+
+## Modify Weather Data In-Place
+
+```{r, out.lines = 15}
+epw$add_unit()
+dry_bulb <- epw$data()$dry_bulb_temperature
+head(dry_bulb)
+```
+
+```{r}
+units(dry_bulb) <- with(units::ud_units, "kelvin")
+head(dry_bulb)
+```
+
+---
+
+## Modify Weather Data In-Place
+
+```{r, out.lines = 15}
+epw$make_na(missing = TRUE)
+str(epw$abnormal_data(keep_all = FALSE))
+```
+
+---
+
+## Set Weather Data
+
+```{r, eval = FALSE}
+epw$add(data, realyear = FALSE, name = NULL, start_day_of_week = NULL, after = 0L, warning = TRUE)
+epw$set(data, realyear = FALSE, name = NULL, start_day_of_week = NULL, period = 1L, warning = TRUE)
+epw$delete(period)
+```
+
+---
+
+## Save Weather File
+
+```{r, eval = FALSE}
+epw$save()
+```
+
+For more info, see `?Epw`
+
+---
+
+## Note on Using Leap-Year AMY Weather Data in EnergyPlus?
+
+See [#32](https://github.com/hongyuanjia/eplusr/issues/32)
+
+```{r}
+#     version type_runperiod type_epw num_row num_leap
+#  1:     8.8            tmy  nonleap    8760       24
+#  2:     9.0            tmy  nonleap    8760       24
+#  3:     9.1            tmy  nonleap    8760       24
+#  4:     8.8            amy  nonleap    8760       24
+#  5:     9.0            amy  nonleap    8760       24
+#  6:     9.1            amy  nonleap    8760       24
+#  7:     8.8            tmy     leap    8784       48
+#  8:     9.0            tmy     leap    8784       48
+#  9:     9.1            tmy     leap    8760       24
+# 10:     8.8            amy     leap    8784       48
+# 11:     9.0            amy     leap    8784       48
+# 12:     9.1            amy     leap    8784       48
+```
+
+---
+
+class: inverse middle center
+
+.animated.bounce[
+<img src="figure/logo.svg" height=280px>
 ]
 
----
-
-## Reproduce
-
-## goal
-
-Simulation is not the goal, collecting the simulation results is.
-
-
----
-
-## Validate
-
-<img src="figure/validate.png" width="95%" align="center" />
-
----
-
-## Other approach
-eppy:
-
-* Edit only one version of model. Lacking support for EPW. Lacking functions to collect results
-
-* openstudio. The powerhouse. Use its sketchup plugin to build building Geometry. Go for it if you love gui.
-
-* openstudio SDK. Highly inspired. Ruby binding. Too heavy. Ruby is not for data analysis.
-jeplus
-
----
-
-## Tidy data
-
-csv screenshot, variable name
-
-A Toolkit for Using Whole Building Simulation Program 'EnergyPlus'
-
-Tidy data is a standard way of mapping the meaning of a dataset to its structure. A dataset is messy or tidy depending on how rows, columns and tables are matched up with observations, variables and types. In tidy data:
-
-* Each variable forms a column.
-
-* Each observation forms a row.
-
-* Each type of observational unit forms a table.
-
-EnergyPlus always gives untidy data.
-
-
----
-
-## custom weather
-
----
-
-## How can I change the weather data?
-Should compliance with the Runperiod headers and others
-
----
-
-## Future plan
-
-* C++ parser for IDD, IDF, and EPW (Openstudio pics)
-
-* Integration with Stan
-
-* HVAC builder based on EnergyPlus example files
-
-* Eplusr Specific option header?
-
-* Version Updater
-
-* A Shiny-based GUI?
+## Summary
 
 ---
 
@@ -1241,7 +1566,11 @@ Should compliance with the Runperiod headers and others
 .pull-left[
 * `Idd` class --> Model definition
 
-* `Idd` class --> Model itself
+* `IddObject` class --> Single class definition
+
+* `Idf` class --> Model itself
+
+* `IdfObject` class --> Single object
 
 * `Epw` class --> Weather file
 
@@ -1256,40 +1585,39 @@ Should compliance with the Runperiod headers and others
 
 ---
 
-### EnergyPlus config
+## Future plan
 
-I want to install the latest version of EnergyPlus (currently 9.1)
+* C++ parser for IDD, IDF, and EPW
 
-```{r eval = FALSE}
-install_eplus()
-```
+* Integration with Stan (sensitivity analysis, Bayesian Calibration)
 
---
+* HVAC builder based on EnergyPlus example files
 
-What versions of EnergyPlus have been install on my computer?
+* Version updater
 
-```{r}
-avail_eplus()
-```
+* Eplusr Specific option header?
 
---
+* A Shiny-based GUI?
 
-What if I installed EnergyPlus at a different location? Let's say `D:\software\EnergyPlusV9-0-1`.  Am I able to use that?
-
-```{r use-eplus, eval = FALSE}
-use_eplus("D:/software/EnergyPlusV9-0-1")
-```
+* Friendly schedule generator?
 
 ---
 
-### Read an example file
+## Call for Contributors
+
+.center[<img src="figure/issue.png" width="70%" align="center" />]
 
 
 ---
 
-## Implementation detailed
+class: right, middle
 
-Use vim to show. Demo
+# Thanks!
 
+<img class="circle" src="https://github.com/hongyuanjia.png" width="150px"/>
 
-## Contributors
+[`r fa_twitter()` @jiahony](http://twitter.com/jiahony)
+
+[`r fa_github()` @hongyuanjia](http://github.com/hongyuanjia)
+
+[`r fa_envelope()` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)

@@ -1,4 +1,4 @@
-rotate_builiding <- function (idf, degree = 0L) {
+rotate_building <- function (idf, degree = 0L) {
     if (!idf$is_valid_class("Building")) {
         stop("Input model does not have a Building object")
     }
