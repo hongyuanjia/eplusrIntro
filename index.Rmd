@@ -2,12 +2,12 @@
 title: "Interfacing EnergyPlus using R"
 subtitle: "------ Intro to <code><font color='#7D88E8'>eplusr</font></code> R package<br><br>`r knitr::include_graphics('figure/logo.svg')`"
 author: "Hongyuan Jia"
-date: '2019-05-14 '
+date: '2019-05-14'
 output:
   xaringan::moon_reader:
-    ratio: 16:9
     css: xaringan-themer.css
     nature:
+      ratio: "16:9"
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
@@ -23,7 +23,7 @@ library(knitr)
 library(icon)
 opts_chunk$set(
   comment = "#>",
-  fig.path = "figure/", fig.align = "center",
+  fig.path = "figure/", fig.align = "center", fig.retina = 3,
   fig.width = 12, fig.show = "hold", fig.height = 8.5,
   cache = FALSE
 )
@@ -106,7 +106,7 @@ class: middle, inverse
 
 ## Why EnergyPlus?
 
-<img src="figure/ep-intro.png" align="center" />
+.center[<img src="figure/ep-intro.png" width = "70%" align="center"/>]
 
 .footnote[Sources: https://energyplus.net/]
 
@@ -114,7 +114,7 @@ class: middle, inverse
 
 ## Why EnergyPlus?
 
-<img src="figure/op-eco.png" width="90%" align="center" />
+.center[<img src="figure/op-eco.png" width="70%" align="center" />]
 
 .footnote[Sources: https://www.energy.gov/eere/buildings/downloads/openstudio-0]
 ---
@@ -123,7 +123,7 @@ class: middle, inverse
 
 .big[.center[.blue[Why not?]]]
 
-.center[<img src="figure/r-tiobe.png" width="70%" align="center" />]
+.center[<img src="figure/r-tiobe.png" width="50%" align="center" />]
 
 ---
 
@@ -150,11 +150,11 @@ R is great for machine learning, data visualization and analysis, and some areas
 > understood and verified.
 
 .pull-left[
-<img src="figure/rmd-book.png" width="70%" align="center" />
+<img src="figure/rmd-book.png" width="50%" align="right" />
 ]
 
 .pull-right[
-<img src="figure/rmd.png" width="95%" align="center" />
+<img src="figure/rmd.png" width="70%" align="left" />
 ]
 
 .footnote[
@@ -183,49 +183,49 @@ class: inverse middle center
 
 ## `r fa("frown-open")` &nbsp; Sometimes you do not want to learn a new programming language, just for getting familar with OpenStudio Ruby API ...
 
-.center[<img src="figure/measure.png" width="65%" align="center" />]
+.center[<img src="figure/measure.png" width="70%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you wish IDF Editor could do better when you rename an object...
 
-.center[<img src="figure/idfeditor-rename.png" width="60%" align="center" />]
+.center[<img src="figure/idfeditor-rename.png" width="40%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you failed to recall what magics I did to create all those models...
 
-.center[<img src="figure/parametric.png" width="70%" align="center" />]
+.center[<img src="figure/parametric.png" width="45%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you accidently moved or deleted that "important" csv file used by your model...
 
-.center[<img src="figure/external-file.png" width="110%" align="center" />]
+.center[<img src="figure/external-file.png" width="90%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you want **REAL** date and time from EnergyPlus' output...
 
-.center[<img src="figure/datetime.png" width="25%" align="center" />]
+.center[<img src="figure/datetime.png" width="15%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you wish EnergyPlus could sperate key name and output variable for you...
 
-.center[<img src="figure/eplusout.png" width="85%" align="center" />]
+.center[<img src="figure/eplusout.png" width="75%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you find it is better to show only the data in specific time...
 
-.center[<img src="figure/excel-line-graph.png" width="95%" align="center" />]
+.center[<img src="figure/excel-line-graph.png" width="85%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometmes you don't have enough memory to paste all simulation data into a huge excel file...
 
-.center[<img src="figure/excel-no-mem.jpg" width="90%" align="center" />]
+.center[<img src="figure/excel-no-mem.jpg" width="60%" align="center" />]
 
 ---
 
@@ -333,7 +333,7 @@ class: inverse middle center
 
 ## Imitate your workflow in IDF Editor
 
-.center[<img src="figure/idfeditor.png" width="95%" align="center" />]
+.center[<img src="figure/idfeditor.png" width="65%" align="center" />]
 
 ---
 
@@ -341,7 +341,7 @@ class: inverse middle center
 
 .blue[\[`r fa_question()`\] How can I open an IDF file?]
 
-```{r read-idf}
+```{r read-idf, out.lines = 15}
 (idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
 ```
 ---
@@ -350,7 +350,7 @@ class: inverse middle center
 
 .blue[\[`r fa_question()`\] What does `Group` and `Class` mean?]
 
-.center[<img src="figure/nomenclature.png" width="120%" align="left" />]
+.center[<img src="figure/nomenclature.png" width="90%" align="left" />]
 
 .center[**`Group`** --> **`Class`** --> **`Object`** --> **`Field`** --> **`Value`** ]
 
@@ -580,7 +580,7 @@ idf$add(
 
 --
 
-```{r}
+```{r, out.lines = 15}
 mat_def <- idf$definition("Material")
 mat_def
 ```
@@ -781,8 +781,11 @@ idf$to_string("mat_renamed", header = FALSE)
 
 ---
 
-```{r}
+```{r, eval = FALSE}
 idf$to_table("mat_renamed")
+```
+```{r, echo = FALSE}
+knitr::kable(idf$to_table("mat_renamed"), "html")
 ```
 
 ---
@@ -793,7 +796,7 @@ idf$to_table("mat_renamed")
 
 --
 
-```{r}
+```{r, out.lines = 15}
 ddy <- read_idf(file.path("materials/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.ddy"), 8.8)
 
 names(idf$insert(ddy$SizingPeriod_DesignDay))
@@ -891,7 +894,7 @@ class: middle, inverse
 
 ## Leverage the power of R
 
-.center[<img src="figure/rotate_building.png" width="100%" align="center" />]
+.center[<img src="figure/rotate_building.png" width="90%" align="center" />]
 
 .footnote[Source: https://bcl.nrel.gov/node/84693]
 
@@ -909,7 +912,7 @@ rotate_building(idf, 30)
 
 ## Leverage the power of R
 
-.center[<img src="figure/increase-r-value-of-roof.png" width="100%" align="center" />]
+.center[<img src="figure/increase-r-value-of-roof.png" width="90%" align="center" />]
 
 .footnote[Source: https://bcl.nrel.gov/node/84677]
 
@@ -1012,13 +1015,13 @@ are matched up with observations, variables and types. In tidy data:
 
 ## Introducing Tidy Data
 
-.center[<img src="figure/eplusout.png" width="85%" align="center" />]
+.center[<img src="figure/eplusout.png" width="65%" align="center" />]
 
 .center[EnergyPlus always gives untidy data]
 
 ---
 
-.center[<img src="figure/report_data.png" width="20%" align="center" />]
+.center[<img src="figure/report_data.png" width="10%" align="center" />]
 
 ```{r}
 first_line <- suppressWarnings(job$report_data()[1])
@@ -1250,7 +1253,11 @@ param$apply_measure(rotate_and_align_r_value, comb$degree, comb$r_value, .names 
 
 ## Run Parametric Simulations
 
-```{r, results = "hide"}
+```{r, eval = FALSE}
+param$run(tempdir())
+```
+
+```{r, include = FALSE}
 param$run(tempdir())
 ```
 
