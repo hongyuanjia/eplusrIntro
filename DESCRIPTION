@@ -18,6 +18,7 @@ Imports:
     xaringanthemer (>= 0.2.0),
     icon (>= 0.1.0),
     curl
+    tidyverse
 Remotes:
     hongyuanjia/eplusr,
     gadenbuie/xaringanthemer,
