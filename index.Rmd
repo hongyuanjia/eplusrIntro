@@ -26,9 +26,9 @@ library(knitr)
 library(icon)
 opts_chunk$set(
   comment = "#>",
-  fig.path = "figure/", cache.path = "cache/", fig.align = "center",
+  fig.path = "figure/", fig.align = "center",
   fig.width = 12, fig.show = "hold", fig.height = 8.5,
-  cache = FALSE, external = TRUE, dev = "svglite"
+  cache = TRUE, external = TRUE, dev = "svglite"
 )
 
 hook_output <- knitr::knit_hooks$get("output")
@@ -624,7 +624,7 @@ names(mat_def)
 modifcation. How can I add objects programitically?]
 
 ```{r}
-my_const <- list(Construction = c("my_const", "my_mat"))
+my_const <- list(Construction = list("my_const", "my_mat"))
 idf$add(my_const)
 ```
 
@@ -665,8 +665,7 @@ can I change field values of that object?]
 
 ```{r}
 idf$object_id("Material")
-idf$set(..511 = list(Thickness = 0.2))
-idf$SimulationControl$set(Do_System_Sizing_Calculation = "No")
+idf$set(..498 = list(Thickness = 0.3))
 ```
 
 ---
@@ -720,6 +719,8 @@ idf$load(
 ---
 
 ## Load Objects
+
+You can use either a single string or a character vector.
 
 .pull-left[
 ```{r, eval = FALSE}
@@ -776,30 +777,43 @@ idf$load(
 --
 
 ```{r}
-idf$to_string("mat_renamed", head = FALSE)
+idf$to_string("mat_renamed", header = FALSE)
 ```
 
 ---
 
 ```{r}
-kable(idf$to_table("mat_renamed"))
+idf$to_table("mat_renamed")
 ```
 
 ---
 
 ## Insert Objects
 
-.blue[\[`r fa_question()`\] What if I want to directly insert objects from another `Idf`?]
+.blue[\[`r fa_question()`\] What if I want to directly insert objects from another `Idf` or design days from an `.ddy` file?]
 
 --
 
 ```{r, eval = FALSE, include=FALSE}
-idf$insert("mat_renamed")
+ddy <- read_idf(file.path("materials/USA_CA_San.Francisco.Intl.AP.724940_TMY3.ddy"), 8.8)
+
+names(idf$insert(ddy$SizingPeriod_DesignDay))
 ```
 
 ---
 
 ## Delete Objects
+
+.blue[\[`r fa_question()`\] How can I delete objects?]
+
+```{r del, error = TRUE}
+idf$del("mat-to-load", idf$object_id("SizingPeriod:DesignDay", simplify = TRUE))
+```
+---
+
+## Delete Objects
+
+.blue[\[`r fa_question()`\] What if I try to delete a material that is used by an construction?]
 
 ```{r del-err, error = TRUE}
 idf$del("mat_renamed")
@@ -811,8 +825,262 @@ idf$del("mat_renamed")
 
 .blue[\[`r fa_question()`\] What if I want to delete the material and all constructions that use it?]
 
-```{r, error=TRUE}
+```{r}
 idf$del("mat_renamed", .ref_by = TRUE)
+```
+
+---
+
+## Delete Objects
+
+.blue[\[`r fa_question()`\] What if I want to delete a construction and all materials it uses?]
+
+```{r del-ref-to, eval = FALSE}
+idf$del("my_const", .ref_to = TRUE)
+```
+
+---
+
+## Check for errors
+
+.blue[\[`r fa_question()`\] How can I check for possible errors in my model just like IDF Editor does?]
+
+--
+
+```{r}
+idf$validate()
+```
+
+---
+
+.blue[\[`r fa_question()`\] How kinds of checkings are there?]
+
+```{r}
+eplusr_option("validate_level")
+level_checks(eplusr_option("validate_level"))
+```
+---
+
+## Save model
+
+.blue[\[`r fa_question()`\] I am not quite sure if I made modifcations to the model...]
+
+--
+
+```{r}
+idf$is_unsaved()
+```
+
+--
+
+```{r save-err, error = TRUE}
+idf$save(file.path(tempdir(), "test.idf"))
+```
+
+---
+
+name: prerequiste
+class: middle, inverse
+
+## `r fa_flushed()` &nbsp; No big deal so far...
+
+--
+
+## .blue[`r fa_rocket()` &nbsp; R is a programming language!]
+
+---
+
+## Leverage the power of R
+
+.center[<img src="figure/rotate_building.png" width="100%" align="center" />]
+
+.footnote[Source: https://bcl.nrel.gov/node/84693]
+
+---
+
+## Demo
+
+```{r}
+source("measures/rotate.R")
+
+rotate_builiding(idf, 30)
+```
+
+---
+
+## Leverage the power of R
+
+.center[<img src="figure/increase-r-value-of-roof.png" width="100%" align="center" />]
+
+.footnote[Source: https://bcl.nrel.gov/node/84677]
+
+---
+
+## Demo
+
+```{r}
+source("measures/roof_r_value.R")
+
+align_roof_r_value(idf, 5)
+```
+
+---
+
+## Run and Collect Output
+
+.blue[\[`r fa_question()`\] Finally! How can I run my simulaion?]
+
+```{r run, out.lines = 14}
+path_epw <- file.path("materials/USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
+idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf")
+job <- idf$run(path_epw, dir = tempdir())
+
+```
+
+---
+
+## Run and Collect Output
+
+.blue[\[`r fa_question()`\] How can I see if there are errors during my simulation?]
+
+```{r}
+job
+```
+
+---
+
+```{r}
+job$errors()
+```
+
+---
+
+## Run and Collect Output
+
+.blue[\[`r fa_question()`\] How can I retrieve my simulation results?]
+
+```{r}
+job$report_data()
+```
+
+---
+
+## Run and Collect Output
+
+.blue[\[`r fa_question()`\] What are the advantages of using `$report_data()`?]
+
+```{r}
+args(job$report_data)
+```
+
+---
+
+## Introducing Tidy Data
+
+Tidy data is a standard way of mapping the meaning of a dataset to its
+structure. A dataset is messy or tidy depending on how rows, columns and tables
+are matched up with observations, variables and types. In tidy data:
+
+* Each variable forms a column.
+
+* Each observation forms a row.
+
+* Each type of observational unit forms a table.
+
+.footnote[Source: https://www.jstatsoft.org/article/view/v059i10]
+
+---
+
+## Introducing Tidy Data
+
+.center[<img src="figure/eplusout.png" width="85%" align="center" />]
+
+.center[EnergyPlus always gives untidy data]
+
+---
+
+.center[<img src="figure/report_data.png" width="20%" align="center" />]
+
+```{r}
+first_line <- suppressWarnings(job$report_data()[1])
+str(first_line)
+```
+
+`SPACE1-1: Zone Air System Sensible Heating Rate [W](Hourly)`:
+
+* .blue[key_value] --> `SPACE1-1`
+* .blue[name] --> `Zone Air System Sensible Heating Rate`
+* .blue[units] --> `W`
+
+---
+
+.blue[Get air temperature for all zones]
+
+```{r, eval = FALSE}
+job$report_data(name = "zone air temperature")
+```
+
+--
+
+.blue[Get air temperature for zone 'SPACE1-1' only]
+
+```{r, eval = FALSE}
+job$report_data("space1-1", "zone air temperature")
+```
+
+---
+
+.blue[Real `DateTime`]
+
+```{r}
+str(job$report_data("space1-1", "zone air temperature")$datetime)
+```
+
+--
+
+.blue[Change the year value of returned date time]
+
+```{r, eval = FALSE}
+job$report_data(year = 2017)
+```
+
+--
+
+.blue[Change the time zone of returned date time]
+
+```{r}
+lubridate::tz(job$report_data(tz = "Asia/Singapore")$datetime)
+```
+
+---
+
+.blue[Precisely control time period]
+
+Get the total cooling rate power of AHU named `Heat Pumpa Cooling Mode AHU1` at
+11 a.m for the first day of all runperiod, tag this simulation as case
+`example`, and return all possible output columns.
+
+```{r, eval = FALSE}
+job$report_data(
+  key_value = "heat pump cooling mode ahu1",
+  name = "cooling coil total cooling rate", case = "example",
+  all = TRUE, simulation_days = 1, hour = 11, minute = 0)
+```
+
+---
+
+.blue[Extract tabular data using `$tabular_data()`]
+
+.center[<img src="figure/tabular_data.png" align="center" />]
+
+```{r, eval = FALSE}
+job$tabular_data(
+  report_name = "ComponentSizingSummary",
+  report_for = "entire facility",
+  table_name = "airterminal:singleduct:uncontrolled",
+  column_name = "user-specified maximum air flow rate",
+  row_name = "space5-1 direct air"
+)
 ```
 
 ---
@@ -929,6 +1197,7 @@ install_eplus()
 ```
 
 --
+
 What versions of EnergyPlus have been install on my computer?
 
 ```{r}
