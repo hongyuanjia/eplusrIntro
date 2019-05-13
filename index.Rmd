@@ -664,6 +664,7 @@ idf$SimulationControl$set(Do_System_Sizing_Calculation = "No")
 can I change field values of that object?]
 
 ```{r}
+idf$object_id("Material")
 idf$set(..511 = list(Thickness = 0.2))
 idf$SimulationControl$set(Do_System_Sizing_Calculation = "No")
 ```
