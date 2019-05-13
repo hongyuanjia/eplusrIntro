@@ -8,6 +8,8 @@ output:
     lib_dir: libs
     ratio: 16:9
     css: xaringan-themer.css
+    includes:
+      in_header: header.html
     nature:
       highlightStyle: github
       highlightLines: true
@@ -21,7 +23,7 @@ class: right, middle
 
 ```{r initial, include = FALSE}
 library(knitr)
-library(fontawesome)
+library(icon)
 opts_chunk$set(
   comment = "#>",
   fig.path = "figure/", cache.path = "cache/", fig.align = "center",
@@ -81,11 +83,11 @@ write_extra_css(extra_css)
 
 # Find me at...
 
-[`r fa(name = "twitter", fill = blue)` @jiahony](http://twitter.com/jiahony)
+[`r fa_twitter()` @jiahony](http://twitter.com/jiahony)
 
-[`r fa(name = "github", fill = blue)` @hongyuanjia](http://github.com/hongyuanjia)
+[`r fa_github()` @hongyuanjia](http://github.com/hongyuanjia)
 
-[`r fa(name = "envelope", fill = blue)` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
+[`r fa_envelope()` hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
 
 ---
 
@@ -97,7 +99,7 @@ class: middle, inverse
 
 --
 
-### `r fa("r-project", fill = "white")` &nbsp; You know R and are comfortable with R programming
+### `r fa_r_project()` &nbsp; You know R and are comfortable with R programming
 
 --
 
@@ -120,7 +122,7 @@ class: middle, inverse
 .footnote[Sources: https://www.energy.gov/eere/buildings/downloads/openstudio-0]
 ---
 
-## Why &nbsp;`r fa("r-project")` ?
+## Why &nbsp;`r fa_r_project()` ?
 
 .big[.center[.blue[Why not?]]]
 
@@ -128,7 +130,7 @@ class: middle, inverse
 
 ---
 
-## Why &nbsp;`r fa("r-project")` ?
+## Why &nbsp;`r fa_r_project()` ?
 
 <img src="figure/r4ds-book.png" width="10%" align="right" />
 
@@ -168,7 +170,7 @@ https://bookdown.org/yihui/rmarkdown/
 
 class: inverse middle center
 
-## `r fa("flushed")` &nbsp; Wait! We already have OpenStudio and IDF Editor!!
+## `r fa_flushed()` &nbsp; Wait! We already have OpenStudio and IDF Editor!!
 
 ## Why bother ??
 
@@ -178,19 +180,23 @@ class: inverse middle center
 
 --
 
-# .blue[Life is hard using OpenStudio and EnergyPlus, sometimes &nbsp; `r fa("grin-squint-tears")`]
+# .blue[Life is hard using OpenStudio and EnergyPlus, sometimes &nbsp; `r fa_grin_squint_tears()`]
+
+---
+
+## `r fa("frown-open")` &nbsp; Sometimes you do not want to learn a new programming language Ruby just for getting familar with OpenStudio Ruby API ...
+
+.center[<img src="figure/openstudio.png" width="60%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you wish IDF Editor could do better when you rename an object...
-
 
 .center[<img src="figure/idfeditor-rename.png" width="60%" align="center" />]
 
 ---
 
 ## `r fa("frown-open")` &nbsp; Sometimes you failed to recall what magics I did to create all those models...
-
 
 .center[<img src="figure/parametric.png" width="70%" align="center" />]
 

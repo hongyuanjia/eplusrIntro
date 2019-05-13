@@ -16,8 +16,8 @@ Imports:
     xaringan,
     knitr,
     xaringanthemer (>= 0.2.0),
-    fontawesome (>= 0.1.0)
-Remotes:
+    icon (>= 0.1.0)
+Remotes: 
     gadenbuie/xaringanthemer,
-    rstudio/fontawesome
+    ropenscilabs/icon
 URL: https://github.com/hongyuanjia/eplusrIntro
