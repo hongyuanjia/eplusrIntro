@@ -28,6 +28,8 @@ after_script: R -q -e 'tic::after_script()'
 # Custom parts:
 
 language: r
+r:
+  - oldrel
 sudo: true
 dist: xenial
 cache: packages
