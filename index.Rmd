@@ -311,6 +311,11 @@ You can install EnergyPlus using `install_eplus()`.
 install_eplus(8.8)
 ```
 
+```{r, include = FALSE}
+if (!is_avail_eplus(8.8)) install_eplus(8.8)
+```
+
+
 **Note** that `install_eplus()` requires administrative privileges. You have to run R with administrator (or with sudo if you are on macOS or Linux) to make it work if you are not in interactive mode.
 
 You can also download the installer and install it by yourself:
@@ -585,7 +590,7 @@ mat_def
 
 ## Definition
 
-.blue[\[`r fa_question()`\] I don't want to copy from the console!]
+.blue[\[`r fa_question()`\] I don't want to copy from the console...]
 
 --
 
@@ -601,7 +606,7 @@ mat_def$field_name()
 
 --
 
-```{r iddobj}
+```{r iddobj, out.lines = 10}
 names(mat_def)
 ```
 
@@ -614,6 +619,9 @@ names(mat_def)
 ---
 
 ## Add Objects
+
+.blue[\[`r fa_question()`\] But that may only be useful for interactive
+modifcation. How can I add objects programitically?]
 
 ```{r}
 my_const <- list(Construction = c("my_const", "my_mat"))
@@ -630,6 +638,8 @@ idf$object_relation("my_const", "ref_to")
 
 ## Change Existing Objects
 
+.blue[\[`r fa_question()`\] How can I change existing objects?]
+
 ```{r}
 idf$set(my_mat = list(name = "new_mat"))
 idf$Construction$my_const
@@ -637,7 +647,32 @@ idf$Construction$my_const
 
 ---
 
+## Change Existing Objects
+
+.blue[\[`r fa_question()`\] How can I change an object that does not have a name? Say `SimulationControl`?]
+
+```{r}
+idf$SimulationControl$Do_Zone_Sizing_Calculation <- "No"
+idf$SimulationControl$set(Do_System_Sizing_Calculation = "No")
+```
+
+---
+
+## Change Existing Objects
+
+.blue[\[`r fa_question()`\] What if I forgot to give a name to a material? How
+can I change field values of that object?]
+
+```{r}
+idf$set(..511 = list(Thickness = 0.2))
+idf$SimulationControl$set(Do_System_Sizing_Calculation = "No")
+```
+
+---
+
 ## Rename Objects
+
+.blue[\[`r fa_question()`\] `Old_Name = list(Name = "New_Name")` syntax looks wired. What if I just want to rename an object?]
 
 ```{r}
 idf$rename(mat_renamed = "new_mat")
