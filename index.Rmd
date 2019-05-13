@@ -5,11 +5,8 @@ author: "Hongyuan Jia"
 date: '2019-05-14 '
 output:
   xaringan::moon_reader:
-    lib_dir: libs
     ratio: 16:9
     css: xaringan-themer.css
-    includes:
-      in_header: header.html
     nature:
       highlightStyle: github
       highlightLines: true
@@ -28,7 +25,7 @@ opts_chunk$set(
   comment = "#>",
   fig.path = "figure/", fig.align = "center",
   fig.width = 12, fig.show = "hold", fig.height = 8.5,
-  cache = TRUE, external = TRUE, dev = "svglite"
+  cache = TRUE
 )
 
 hook_output <- knitr::knit_hooks$get("output")
@@ -794,7 +791,7 @@ idf$to_table("mat_renamed")
 
 --
 
-```{r, eval = FALSE, include=FALSE}
+```{r}
 ddy <- read_idf(file.path("materials/USA_CA_San.Francisco.Intl.AP.724940_TMY3.ddy"), 8.8)
 
 names(idf$insert(ddy$SizingPeriod_DesignDay))
@@ -857,7 +854,7 @@ idf$validate()
 
 ```{r}
 eplusr_option("validate_level")
-level_checks(eplusr_option("validate_level"))
+str(level_checks(eplusr_option("validate_level")))
 ```
 ---
 
@@ -944,6 +941,8 @@ job <- idf$run(path_epw, dir = tempdir())
 .blue[\[`r fa_question()`\] How can I see if there are errors during my simulation?]
 
 ```{r}
+class(job)
+names(job)
 job
 ```
 
@@ -1014,6 +1013,14 @@ str(first_line)
 
 ---
 
+.blue[Get all available report variable keys and names]
+
+```{r, eval = FALSE}
+str(job$report_data_dict())
+```
+
+---
+
 .blue[Get air temperature for all zones]
 
 ```{r, eval = FALSE}
@@ -1022,10 +1029,19 @@ job$report_data(name = "zone air temperature")
 
 --
 
-.blue[Get air temperature for zone 'SPACE1-1' only]
+.blue[Get air temperature for zone `SPACE1-1` only]
 
 ```{r, eval = FALSE}
 job$report_data("space1-1", "zone air temperature")
+```
+
+---
+
+.blue[Directly use `$report_data_dict()` to extract results]
+
+```{r, eval = FALSE}
+dict <- job$report_data_dict()
+job$report_data(dict[is_meter == 1])
 ```
 
 ---
@@ -1050,6 +1066,14 @@ job$report_data(year = 2017)
 
 ```{r}
 lubridate::tz(job$report_data(tz = "Asia/Singapore")$datetime)
+```
+
+---
+
+.blue[Make sure start day of week matches]
+
+```{r}
+(job$report_data(tz = "Asia/Singapore")$datetime)
 ```
 
 ---
