@@ -186,7 +186,7 @@ class: inverse middle center
 
 ## `r fa("frown-open")` &nbsp; Sometimes you do not want to learn a new programming language Ruby just for getting familar with OpenStudio Ruby API ...
 
-.center[<img src="figure/openstudio.png" width="60%" align="center" />]
+.center[<img src="figure/measure.png" width="60%" align="center" />]
 
 ---
 
@@ -335,21 +335,16 @@ class: inverse middle center
 
 ## Read IDF
 
-.blue[\[`r fa("question")`\] How can I open an IDF file?]
+.blue[\[`r fa_question()`\] How can I open an IDF file?]
 
-```{r read-idf, eval = FALSE}
+```{r read-idf}
 (idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
-```
-
-```{r read-idf-raw, out.ines = 10, echo = FALSE}
-path_idf <- "https://raw.githubusercontent.com/hongyuanjia/eplusrIntro/master/materials/5ZoneWaterLoopHeatPump.idf"
-(idf <- read_idf(path_idf))
 ```
 ---
 
 ## Nomenclature
 
-.blue[\[`r fa("question")`\] How does `Group` and `Class` mean?]
+.blue[\[`r fa_question()`\] What does `Group` and `Class` mean?]
 
 .center[<img src="figure/nomenclature.png" width="120%" align="left" />]
 
@@ -359,15 +354,20 @@ path_idf <- "https://raw.githubusercontent.com/hongyuanjia/eplusrIntro/master/ma
 
 ## Basic Info
 
-.blue[\[`r fa("question")`\] Where is my IDF?]
+.blue[\[`r fa_question()`\] Where is my IDF?]
 
 ```{r}
 idf$path()
 ```
 
+???
+
+Note that if the model is created from a string or is creating by directly
+reading an online file, `NULL` is returned.
+
 --
 
-.blue[\[`r fa("question")`\] Is there any `Location and Climate` related thing in my model?]
+.blue[\[`r fa_question()`\] Is there any `Location and Climate` related thing in my model?]
 
 --
 
@@ -377,7 +377,7 @@ idf$is_valid_group("Location and Climate")
 
 --
 
-.blue[\[`r fa("question")`\] Is there any `Schedule:Constant` object in my model?]
+.blue[\[`r fa_question()`\] Is there any `Schedule:Constant` object in my model?]
 
 --
 
@@ -389,7 +389,7 @@ idf$is_valid_class("Schedule:Constant")
 
 ## Basic Info
 
-.blue[\[`r fa("question")`\] How can I get all names of existing groups and classes in my model?]
+.blue[\[`r fa_question()`\] How can I get all names of existing groups and classes in my model?]
 
 --
 
@@ -402,7 +402,7 @@ str(idf$class_name())
 
 ## Basic Info
 
-.blue[\[`r fa("question")`\] How can I get all names of existing groups and classes defined by EnergyPlus?]
+.blue[\[`r fa_question()`\] How can I get all names of existing groups and classes defined by EnergyPlus?]
 
 --
 
@@ -415,7 +415,7 @@ str(idf$class_name(all = TRUE))
 
 ## Basic Info
 
-.blue[\[`r fa("question")`\] Is there any `Location and Climate` related thing in my model?]
+.blue[\[`r fa_question()`\] Is there any `Location and Climate` related thing in my model?]
 
 --
 
@@ -425,7 +425,7 @@ idf$is_valid_group("Location and Climate")
 
 --
 
-.blue[\[`r fa("question")`\] Is there any `Schedule:Constant` object in my model?]
+.blue[\[`r fa_question()`\] Is there any `Schedule:Constant` object in my model?]
 
 --
 
@@ -437,7 +437,7 @@ idf$is_valid_class("Schedule:Constant")
 
 ## Basic Info
 
-.blue[\[`r fa("question")`\] How many construction and zones are there in my model?]
+.blue[\[`r fa_question()`\] How many construction and zones are there in my model?]
 
 --
 
@@ -447,7 +447,7 @@ idf$object_num(c("Construction", "Zone"))
 
 --
 
-.blue[\[`r fa("question")`\] Every construction and zone should have a name. Can I get them?]
+.blue[\[`r fa_question()`\] Every construction and zone should have a name. Can I get them?]
 
 --
 
@@ -460,7 +460,7 @@ idf$object_name(c("Construction", "Zone"))
 ## Basic Info
 
 
-.blue[\[`r fa("question")`\] I don't think object in class `Version` has a name...]
+.blue[\[`r fa_question()`\] I don't think object in class `Version` has a name...]
 
 --
 
@@ -470,7 +470,7 @@ idf$object_name("Version")
 
 --
 
-.blue[\[`r fa("question")`\] If so, how can I distinguish objects that do not have names?]
+.blue[\[`r fa_question()`\] If so, how can I distinguish objects that do not have names?]
 
 --
 
@@ -482,7 +482,7 @@ idf$object_id(c("Version", "Construction", "Zone"))
 
 ## Object Query
 
-.blue[\[`r fa("question")`\] How can I see if a material is used by other constructions?]
+.blue[\[`r fa_question()`\] How can I see if a material is used by other constructions?]
 
 --
 
@@ -494,7 +494,7 @@ idf$object_relation("wd01")
 
 ## Object Query
 
-.blue[\[`r fa("question")`\] How can I see the contents of an object?]
+.blue[\[`r fa_question()`\] How can I see the contents of an object?]
 
 --
 
@@ -506,7 +506,7 @@ idf$object("wall-1")
 
 ## Object Query
 
-.blue[\[`r fa("question")`\] What if I want to see all objects in class `Material`?]
+.blue[\[`r fa_question()`\] What if I want to see all objects in class `Material`?]
 
 --
 
@@ -518,7 +518,7 @@ idf$Material
 
 ## Object Query
 
-.blue[\[`r fa("question")`\] What if I want to see both a construction and a material?]
+.blue[\[`r fa_question()`\] What if I want to see both a construction and a material?]
 
 --
 
@@ -530,7 +530,7 @@ idf$objects(c("wall-1", "wd01"))
 
 ## Object Query
 
-.blue[\[`r fa("question")`\] What if I want to see a material and all constructions that use it?]
+.blue[\[`r fa_question()`\] What if I want to see a material and all constructions that use it?]
 
 --
 
@@ -542,7 +542,7 @@ idf$objects_in_relation("wd01", "ref_by")
 
 ## Object Query
 
-.blue[\[`r fa("question")`\] But those construction may be also used in surfaces. Can I get all objects that has some relations with that material?]
+.blue[\[`r fa_question()`\] But those construction may be also used in surfaces. Can I get all objects that has some relations with that material?]
 
 --
 
@@ -554,6 +554,10 @@ lapply(idf$objects_in_relation("wd01", "ref_by", recursive = TRUE),
 ---
 
 ## Add Objects
+
+.blue[\[`r fa_question()`\] How can I add new objects?]
+
+--
 
 ```{r, out.lines = 10}
 idf$add(
@@ -568,7 +572,7 @@ idf$add(
 
 ## Definition
 
-.blue[\[`r fa("question")`\] But how can I remember all field names?]
+.blue[\[`r fa_question()`\] But I cannot remember all field names...]
 
 --
 
@@ -581,7 +585,7 @@ mat_def
 
 ## Definition
 
-.blue[\[`r fa("question")`\] I don't want to copy from the console!]
+.blue[\[`r fa_question()`\] I don't want to copy from the console!]
 
 --
 
@@ -593,9 +597,13 @@ mat_def$field_name()
 
 ## Definition
 
-.blue[\[`r fa("question")`\] So I guess there should be other data I can get from `mat_def`...]
+.blue[\[`r fa_question()`\] So I guess there should be other data I can get from `mat_def`...]
 
 --
+
+```{r iddobj}
+names(mat_def)
+```
 
 `IdfObject` is your friend.
 
@@ -656,7 +664,7 @@ idf$paste()
 
 ## Load Objects
 
-.blue[\[`r fa("question")`\] I love copy-- paste...]
+.blue[\[`r fa_question()`\] I love copy-- paste...]
 
 --
 
@@ -710,7 +718,7 @@ idf$load(c(
 
 ## Load Objects
 
-.blue[\[`r fa("question")`\] You know, R is fameous for `data.frame`...]
+.blue[\[`r fa_question()`\] You know, R is fameous for `data.frame`...]
 
 --
 
@@ -727,7 +735,7 @@ idf$load(
 
 ## Data Extraction
 
-.blue[\[`r fa("question")`\] No one would like to manually create that string or data.frame...]
+.blue[\[`r fa_question()`\] No one would like to manually create that string or data.frame...]
 
 --
 
@@ -745,7 +753,7 @@ kable(idf$to_table("mat_renamed"))
 
 ## Insert Objects
 
-.blue[\[`r fa("question")`\] What if I want to directly insert objects from another `Idf`?]
+.blue[\[`r fa_question()`\] What if I want to directly insert objects from another `Idf`?]
 
 --
 
@@ -765,7 +773,7 @@ idf$del("mat_renamed")
 
 ## Delete Objects
 
-.blue[\[`r fa("question")`\] What if I want to delete the material and all constructions that use it?]
+.blue[\[`r fa_question()`\] What if I want to delete the material and all constructions that use it?]
 
 ```{r, error=TRUE}
 idf$del("mat_renamed", .ref_by = TRUE)
