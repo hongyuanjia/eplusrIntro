@@ -268,7 +268,7 @@ You can install the latest stable release of **eplusr** from CRAN.
 install.packages("eplusr")
 ```
 
-**NOTE**: I refactored the implementation of main classes in eplusr `v0.10.0`. 
+**NOTE**: I refactored the implementation of main classes in eplusr `v0.10.0`.
 If your eplusr version is lower than `v0.10.0`, please update it by simplily reinstall it.
 After install it, load eplusr by doing:
 
@@ -342,7 +342,7 @@ class: inverse middle center
 
 .blue[\[`r fa_question()`\] How can I open an IDF file?]
 
-```{r read-idf, out.lines = 15}
+```{r read-idf, out.lines = 12}
 (idf <- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
 ```
 ---
@@ -364,11 +364,6 @@ class: inverse middle center
 ```{r}
 idf$path()
 ```
-
-???
-
-Note that if the model is created from a string or is creating by directly
-reading an online file, `NULL` is returned.
 
 --
 
@@ -414,28 +409,6 @@ str(idf$class_name())
 ```{r}
 str(idf$group_name(all = TRUE))
 str(idf$class_name(all = TRUE))
-```
-
----
-
-## Basic Info
-
-.blue[\[`r fa_question()`\] Is there any `Location and Climate` related thing in my model?]
-
---
-
-```{r}
-idf$is_valid_group("Location and Climate")
-```
-
---
-
-.blue[\[`r fa_question()`\] Is there any `Schedule:Constant` object in my model?]
-
---
-
-```{r}
-idf$is_valid_class("Schedule:Constant")
 ```
 
 ---
@@ -1025,7 +998,7 @@ are matched up with observations, variables and types. In tidy data:
 .center[<img src="figure/report_data.png" width="10%" align="center" />]
 
 ```{r}
-first_line <- suppressWarnings(job$report_data()[1])
+first_line <- job$report_data()[1]
 str(first_line)
 ```
 
