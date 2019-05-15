@@ -1,0 +1,3080 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Interfacing EnergyPlus using R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Hongyuan Jia" />
+    <meta name="date" content="2019-05-14" />
+    <link href="libs/font-awesome/css/fontawesome-all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Interfacing EnergyPlus using R
+## —— Intro to <code><font color='#7D88E8'>eplusr</font></code> R package<br><br><img src="figure/logo.svg" /><!-- -->
+### Hongyuan Jia
+### 2019-05-14
+
+---
+
+
+name: self
+class: right, middle
+
+
+
+
+
+&lt;img class="circle" src="https://github.com/hongyuanjia.png" width="150px"/&gt;
+
+# Find me at...
+
+[<i class="fab  fa-twitter "></i> @jiahony](http://twitter.com/jiahony)
+
+[<i class="fab  fa-github "></i> @hongyuanjia](http://github.com/hongyuanjia)
+
+[<i class="fas  fa-envelope "></i> hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
+
+---
+
+name: prerequiste
+class: middle, inverse
+
+
+# We assume:
+
+--
+
+### <i class="fab  fa-r-project "></i> &amp;nbsp; You know R and are comfortable with R programming
+
+--
+
+### &lt;img src="figure/ep-nobg.png" width="6%" style="float:left"/&gt;&amp;nbsp; You know basic EnergyPlus, e.g. how to edit and run a model
+
+---
+
+## Why EnergyPlus?
+
+.center[&lt;img src="figure/ep-intro.png" width = "70%" align="center"/&gt;]
+
+.footnote[Sources: https://energyplus.net/]
+
+---
+
+## Why EnergyPlus?
+
+.center[&lt;img src="figure/op-eco.png" width="70%" align="center" /&gt;]
+
+.footnote[Sources: https://www.energy.gov/eere/buildings/downloads/openstudio-0]
+---
+
+## Why &amp;nbsp;<i class="fab  fa-r-project "></i> ?
+
+.big[.center[.blue[Why not?]]]
+
+.center[&lt;img src="figure/r-tiobe.png" width="50%" align="center" /&gt;]
+
+---
+
+## Why &amp;nbsp;<i class="fab  fa-r-project "></i> ?
+
+&lt;img src="figure/r4ds-book.png" width="10%" align="right" /&gt;
+
+R is great for machine learning, data visualization and analysis, and some areas of scientific computing.
+
+&lt;br&gt;
+&lt;br&gt;
+
+&lt;img src="figure/r4ds.svg" width="90%" align="center" /&gt;
+
+
+.footnote[Sources: https://r4ds.had.co.nz/]
+
+---
+
+## Why &amp;nbsp;<i class="fab  fa-r-project "></i> ?
+
+&gt; The goal of reproducible research is to tie specific instructions to data
+&gt; analysis and experimental data so that scholarship can be recreated, better
+&gt; understood and verified.
+
+.pull-left[
+&lt;img src="figure/rmd-book.png" width="50%" align="right" /&gt;
+]
+
+.pull-right[
+&lt;img src="figure/rmd.png" width="70%" align="left" /&gt;
+]
+
+.footnote[
+Sources:
+https://cran.r-project.org/web/views/ReproducibleResearch.html;
+https://bookdown.org/yihui/rmarkdown/
+]
+
+---
+
+class: inverse middle center
+
+## <i class="fas  fa-flushed "></i> &amp;nbsp; Wait! We already have OpenStudio and IDF Editor!!
+
+## Why bother ??
+
+--
+
+## Because...
+
+--
+
+# .blue[Life is hard using OpenStudio and EnergyPlus, sometimes &amp;nbsp; <i class="fas  fa-grin-squint-tears "></i>]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometimes you do not want to learn a new programming language, just for getting familar with OpenStudio Ruby API ...
+
+.center[&lt;img src="figure/measure.png" width="70%" align="center" /&gt;]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometimes you wish IDF Editor could do better when you rename an object...
+
+.center[&lt;img src="figure/idfeditor-rename.png" width="40%" align="center" /&gt;]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometimes you failed to recall what magics I did to create all those models...
+
+.center[&lt;img src="figure/parametric.png" width="45%" align="center" /&gt;]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometimes you accidently moved or deleted that "important" csv file used by your model...
+
+.center[&lt;img src="figure/external-file.png" width="90%" align="center" /&gt;]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometimes you want **REAL** date and time from EnergyPlus' output...
+
+.center[&lt;img src="figure/datetime.png" width="15%" align="center" /&gt;]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometimes you wish EnergyPlus could sperate key name and output variable for you...
+
+.center[&lt;img src="figure/eplusout.png" width="75%" align="center" /&gt;]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometimes you find it is better to show only the data in specific time...
+
+.center[&lt;img src="figure/excel-line-graph.png" width="85%" align="center" /&gt;]
+
+---
+
+## <i class="fas  fa-frown-open "></i> &amp;nbsp; Sometmes you don't have enough memory to paste all simulation data into a huge excel file...
+
+.center[&lt;img src="figure/excel-no-mem.jpg" width="60%" align="center" /&gt;]
+
+---
+
+class: inverse middle center
+
+.animated.bounce[
+&lt;img src="figure/logo.svg" height=280px&gt;
+]
+
+## A Toolkit for Using EnergyPlus in R
+
+---
+
+## Features
+
+* Read, parse and modify EnergyPlus Input Data File (IDF)
+
+* Read, parse and modify EnergyPlus Weather File (EPW)
+
+* Query on models, including classes, objects and fields
+
+* Directly add, modify, duplicate, insert, and delete objects of IDF
+
+* Automatically change referenced fields when modifying objects
+
+* Save changed models into standard formats in the same way as IDFEditor distributed along with EnergyPlus
+
+* Run your models and collect the simulation output
+
+* Conduct parametric energy simulations and collect all results in one go
+
+---
+
+## Install and Load
+
+You can install the latest stable release of **eplusr** from CRAN.
+
+
+```r
+install.packages("eplusr")
+```
+
+**NOTE**: I refactored the implementation of main classes in eplusr `v0.10.0`.
+If your eplusr version is lower than `v0.10.0`, please update it by simplily reinstall it.
+After install it, load eplusr by doing:
+
+
+```r
+library(eplusr)
+```
+
+---
+
+## Install and Load
+
+When loading, eplusr will try to find all EnergyPlus that are installed at the default location.
+
+
+
+```r
+avail_eplus()
+```
+
+```
+#&gt; NULL
+```
+
+What if your EnergyPlus installed at a custom location? Just add it:
+
+
+```r
+use_eplus("your_fancy_path")
+```
+
+---
+
+## Install and Load
+
+To check if certain EnergyPlus is located by eplusr:
+
+
+```r
+is_avail_eplus(8.8)
+```
+
+```
+#&gt; [1] FALSE
+```
+
+You can install EnergyPlus using `install_eplus()`.
+
+
+```r
+install_eplus(8.8)
+```
+
+
+
+
+**Note** that `install_eplus()` requires administrative privileges. You have to run R with administrator (or with sudo if you are on macOS or Linux) to make it work if you are not in interactive mode.
+
+You can also download the installer and install it by yourself:
+
+
+```r
+download_eplus(8.8, dir = "where_to_save")
+```
+
+---
+
+class: inverse middle center
+
+# .blue[Idf] Class
+
+### Modify EnergyPlus Model
+
+---
+
+## Imitate your workflow in IDF Editor
+
+.center[&lt;img src="figure/idfeditor.png" width="65%" align="center" /&gt;]
+
+---
+
+## Read IDF
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I open an IDF file?]
+
+
+```r
+(idf &lt;- read_idf("materials/5ZoneWaterLoopHeatPump.idf"))
+```
+
+```
+#&gt; IDD v8.8.0 has not been parsed before.
+#&gt; Try to locate `Energy+.idd` in EnergyPlus v8.8.0 installation folder `/usr/local/EnergyPlus-8-8-0`.
+```
+
+```
+#&gt; IDD file found: `/usr/local/EnergyPlus-8-8-0/Energy+.idd`.
+```
+
+```
+#&gt; Start parsing...
+```
+
+```
+#&gt; Parsing completed.
+```
+
+```
+#&gt; ── EnergPlus Input Data File ──────────────────────────────────────────────
+#&gt;  * Path: `/home/travis/build/hongyuanjia/eplusrIntro/materials/5ZoneWa...
+#&gt;  * Version: `8.8.0`
+#&gt; 
+#&gt; Group: &lt;Simulation Parameters&gt;
+#&gt; ├─ [001&lt;O&gt;] Class: &lt;Version&gt;
+#&gt; │─ [001&lt;O&gt;] Class: &lt;SimulationControl&gt;
+#&gt; │─ [001&lt;O&gt;] Class: &lt;Building&gt;
+#&gt; │─ [001&lt;O&gt;] Class: &lt;SurfaceConvectionAlgorithm:Inside&gt;
+#&gt; │─ [001&lt;O&gt;] Class: &lt;SurfaceConvectionAlgorithm:Outside&gt;
+#&gt; │─ [001&lt;O&gt;] Class: &lt;HeatBalanceAlgorithm&gt;
+#&gt; └─ [001&lt;O&gt;] Class: &lt;Timestep&gt;
+....
+```
+---
+
+## Nomenclature
+
+.blue[\[<i class="fas  fa-question "></i>\] What does `Group` and `Class` mean?]
+
+.center[&lt;img src="figure/nomenclature.png" width="90%" align="left" /&gt;]
+
+.center[**`Group`** --&gt; **`Class`** --&gt; **`Object`** --&gt; **`Field`** --&gt; **`Value`** ]
+
+---
+
+## Basic Info
+
+.blue[\[<i class="fas  fa-question "></i>\] Where is my IDF?]
+
+
+```r
+idf$path()
+```
+
+```
+#&gt; [1] "/home/travis/build/hongyuanjia/eplusrIntro/materials/5ZoneWaterLoopHeatPump.idf"
+```
+
+--
+
+.blue[\[<i class="fas  fa-question "></i>\] Is there any `Location and Climate` related thing in my model?]
+
+--
+
+
+```r
+idf$is_valid_group("Location and Climate")
+```
+
+```
+#&gt; [1] TRUE
+```
+
+--
+
+.blue[\[<i class="fas  fa-question "></i>\] Is there any `Schedule:Constant` object in my model?]
+
+--
+
+
+```r
+idf$is_valid_class("Schedule:Constant")
+```
+
+```
+#&gt; [1] FALSE
+```
+
+---
+
+## Basic Info
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I get all names of existing groups and classes in my model?]
+
+--
+
+
+```r
+str(idf$group_name())
+```
+
+```
+#&gt;  chr [1:24] "Simulation Parameters" "Location and Climate" "Schedules" ...
+```
+
+```r
+str(idf$class_name())
+```
+
+```
+#&gt;  chr [1:75] "Version" "SimulationControl" "Building" ...
+```
+
+---
+
+## Basic Info
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I get all names of existing groups and classes defined by EnergyPlus?]
+
+--
+
+
+```r
+str(idf$group_name(all = TRUE))
+```
+
+```
+#&gt;  chr [1:58] "Simulation Parameters" "Compliance Objects" ...
+```
+
+```r
+str(idf$class_name(all = TRUE))
+```
+
+```
+#&gt;  chr [1:789] "Version" "SimulationControl" "Building" ...
+```
+
+---
+
+## Basic Info
+
+.blue[\[<i class="fas  fa-question "></i>\] How many construction and zones are there in my model?]
+
+--
+
+
+```r
+idf$object_num(c("Construction", "Zone"))
+```
+
+```
+#&gt; [1] 7 6
+```
+
+--
+
+.blue[\[<i class="fas  fa-question "></i>\] Every construction and zone should have a name. Can I get them?]
+
+--
+
+
+```r
+idf$object_name(c("Construction", "Zone"))
+```
+
+```
+#&gt; $Construction
+#&gt; [1] "ROOF-1"               "WALL-1"               "CLNG-1"              
+#&gt; [4] "FLOOR-SLAB-1"         "INT-WALL-1"           "Dbl Clr 3mm/13mm Air"
+#&gt; [7] "Sgl Grey 3mm"        
+#&gt; 
+#&gt; $Zone
+#&gt; [1] "PLENUM-1" "SPACE1-1" "SPACE2-1" "SPACE3-1" "SPACE4-1" "SPACE5-1"
+```
+
+---
+
+## Basic Info
+
+
+.blue[\[<i class="fas  fa-question "></i>\] I don't think object in class `Version` has a name...]
+
+--
+
+
+```r
+idf$object_name("Version")
+```
+
+```
+#&gt; $Version
+#&gt; [1] NA
+```
+
+--
+
+.blue[\[<i class="fas  fa-question "></i>\] If so, how can I distinguish objects that do not have names?]
+
+--
+
+
+```r
+idf$object_id(c("Version", "Construction", "Zone"))
+```
+
+```
+#&gt; $Version
+#&gt; [1] 1
+#&gt; 
+#&gt; $Construction
+#&gt; [1] 38 39 40 41 42 50 51
+#&gt; 
+#&gt; $Zone
+#&gt; [1]  52  63  78  90 103 115
+```
+
+---
+
+## Object Query
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I see if a material is used by other constructions?]
+
+--
+
+
+```r
+idf$object_relation("wd01")
+```
+
+```
+#&gt; ── Refer to Others ────────────────────────────────────────────────────────
+#&gt; Target(s) does not refer to any other field.
+#&gt; 
+#&gt; ── Referred by Others ─────────────────────────────────────────────────────
+#&gt;   Class: &lt;Material&gt;
+#&gt;   └─ Object [ID:26] &lt;WD01&gt;
+#&gt;      └─ 1: "WD01",        !- Name
+#&gt;         ^~~~~~~~~~~~~~~~~~~~~~~~~
+#&gt;         ├─ Class: &lt;Construction&gt;
+#&gt;         │  └─ Object [ID:38] &lt;ROOF-1&gt;
+#&gt;         │     └─ 5: "WD01";        !- Layer 4
+#&gt;         │  
+#&gt;         └─ Class: &lt;Construction&gt;
+#&gt;            └─ Object [ID:39] &lt;WALL-1&gt;
+#&gt;               └─ 2: "WD01";        !- Outside Layer
+....
+```
+
+---
+
+## Object Query
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I see the contents of an object?]
+
+--
+
+
+```r
+idf$object("wall-1")
+```
+
+```
+#&gt; &lt;IdfObject: `Construction`&gt; [ID:39] `WALL-1`
+#&gt; Class: &lt;Construction&gt;
+#&gt; ├─ 1: "WALL-1",   !- Name
+#&gt; │─ 2: "WD01",     !- Outside Layer
+#&gt; │─ 3: "PW03",     !- Layer 2
+#&gt; │─ 4: "IN02",     !- Layer 3
+#&gt; └─ 5: "GP01";     !- Layer 4
+```
+
+---
+
+## Object Query
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I want to see all objects in class `Material`?]
+
+--
+
+
+```r
+idf$Material
+```
+
+```
+#&gt; $WD10
+#&gt; &lt;IdfObject: `Material`&gt; [ID:22] `WD10`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "WD10",         !- Name
+#&gt; │─ 2: "MediumSmooth", !- Roughness
+#&gt; │─ 3: 0.667,          !- Thickness {m}
+#&gt; │─ 4: 0.115,          !- Conductivity {W/m-K}
+#&gt; │─ 5: 513,            !- Density {kg/m3}
+#&gt; │─ 6: 1381,           !- Specific Heat {J/kg-K}
+#&gt; │─ 7: 0.9,            !- Thermal Absorptance
+#&gt; │─ 8: 0.78,           !- Solar Absorptance
+#&gt; └─ 9: 0.78;           !- Visible Absorptance
+#&gt; 
+#&gt; $RG01
+#&gt; &lt;IdfObject: `Material`&gt; [ID:23] `RG01`
+....
+```
+
+---
+
+## Object Query
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I want to see both a construction and a material?]
+
+--
+
+
+```r
+idf$objects(c("wall-1", "wd01"))
+```
+
+```
+#&gt; $`WALL-1`
+#&gt; &lt;IdfObject: `Construction`&gt; [ID:39] `WALL-1`
+#&gt; Class: &lt;Construction&gt;
+#&gt; ├─ 1: "WALL-1",   !- Name
+#&gt; │─ 2: "WD01",     !- Outside Layer
+#&gt; │─ 3: "PW03",     !- Layer 2
+#&gt; │─ 4: "IN02",     !- Layer 3
+#&gt; └─ 5: "GP01";     !- Layer 4
+#&gt; 
+#&gt; $WD01
+#&gt; &lt;IdfObject: `Material`&gt; [ID:26] `WD01`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "WD01",         !- Name
+#&gt; │─ 2: "MediumSmooth", !- Roughness
+#&gt; │─ 3: 0.019099999,    !- Thickness {m}
+....
+```
+
+---
+
+## Object Query
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I want to see a material and all constructions that use it?]
+
+--
+
+
+```r
+idf$objects_in_relation("wd01", "ref_by")
+```
+
+```
+#&gt; $WD01
+#&gt; &lt;IdfObject: `Material`&gt; [ID:26] `WD01`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "WD01",         !- Name
+#&gt; │─ 2: "MediumSmooth", !- Roughness
+#&gt; │─ 3: 0.019099999,    !- Thickness {m}
+#&gt; │─ 4: 0.115,          !- Conductivity {W/m-K}
+#&gt; │─ 5: 513,            !- Density {kg/m3}
+#&gt; │─ 6: 1381,           !- Specific Heat {J/kg-K}
+#&gt; │─ 7: 0.9,            !- Thermal Absorptance
+#&gt; │─ 8: 0.78,           !- Solar Absorptance
+#&gt; └─ 9: 0.78;           !- Visible Absorptance
+#&gt; 
+#&gt; $`ROOF-1`
+#&gt; &lt;IdfObject: `Construction`&gt; [ID:38] `ROOF-1`
+....
+```
+
+---
+
+## Object Query
+
+.blue[\[<i class="fas  fa-question "></i>\] But those construction may be also used in surfaces. Can I get all objects that has some relations with that material?]
+
+--
+
+
+```r
+lapply(idf$objects_in_relation("wd01", "ref_by", recursive = TRUE),
+       function (x) x$class_name())
+```
+
+```
+#&gt; $WD01
+#&gt; [1] "Material"
+#&gt; 
+#&gt; $`ROOF-1`
+#&gt; [1] "Construction"
+#&gt; 
+#&gt; $`WALL-1`
+#&gt; [1] "Construction"
+#&gt; 
+#&gt; $`TOP-1`
+#&gt; [1] "BuildingSurface:Detailed"
+#&gt; 
+#&gt; $`WALL-1PF`
+#&gt; [1] "BuildingSurface:Detailed"
+#&gt; 
+....
+```
+
+---
+
+## Add Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I add new objects?]
+
+--
+
+
+```r
+idf$add(
+  RunPeriod = list(
+    name = "Jan", begin_month = 1, begin_day_of_month = 1,
+    end_month = 1, end_day_of_month = 31),
+  Material = list("my_mat", "Rough", 0.2, 1.5, 2000, 800)
+)
+```
+
+```
+#&gt; $Jan
+#&gt; &lt;IdfObject: `RunPeriod`&gt; [ID:497] `Jan`
+#&gt; Class: &lt;RunPeriod&gt;
+#&gt; ├─ 01: "Jan",            !- Name
+#&gt; │─ 02: 1,                !- Begin Month
+#&gt; │─ 03: 1,                !- Begin Day of Month
+#&gt; │─ 04: 1,                !- End Month
+#&gt; │─ 05: 31,               !- End Day of Month
+#&gt; │─ 06: "UseWeatherFile", !- Day of Week for Start Day
+#&gt; │─ 07: "Yes",            !- Use Weather File Holidays and Special Days
+....
+```
+
+---
+
+## Definition
+
+.blue[\[<i class="fas  fa-question "></i>\] But I cannot remember all field names...]
+
+--
+
+
+```r
+mat_def &lt;- idf$definition("Material")
+mat_def
+```
+
+```
+#&gt; &lt;IddObject: `Material`&gt;
+#&gt; ── MEMO ───────────────────────────────────────────────────────────────────
+#&gt;   "Regular materials described with full set of thermal properties"
+#&gt; 
+#&gt; ── PROPERTIES ─────────────────────────────────────────────────────────────
+#&gt;   * Group: `Surface Construction Elements`
+#&gt;   * Unique: FALSE
+#&gt;   * Required: FALSE
+#&gt;   * Total fields: 9
+#&gt; 
+#&gt; ── FIELDS ─────────────────────────────────────────────────────────────────
+#&gt;   1*: Name
+#&gt;   2*: Roughness
+#&gt;   3*: Thickness
+#&gt;   4*: Conductivity
+....
+```
+
+---
+
+## Definition
+
+.blue[\[<i class="fas  fa-question "></i>\] I don't want to copy from the console...]
+
+--
+
+
+```r
+mat_def$field_name()
+```
+
+```
+#&gt; [1] "Name"                "Roughness"           "Thickness"          
+#&gt; [4] "Conductivity"        "Density"             "Specific Heat"      
+#&gt; [7] "Thermal Absorptance" "Solar Absorptance"   "Visible Absorptance"
+```
+
+---
+
+## Definition
+
+.blue[\[<i class="fas  fa-question "></i>\] So I guess there should be other data I can get from `mat_def`...]
+
+--
+
+
+```r
+names(mat_def)
+```
+
+```
+#&gt;  [1] ".__enclos_env__"           "print"                    
+#&gt;  [3] "to_string"                 "to_table"                 
+#&gt;  [5] "has_ref_by"                "has_ref_to"               
+#&gt;  [7] "has_ref"                   "is_required_field"        
+#&gt;  [9] "is_integer_field"          "is_real_field"            
+#&gt; [11] "is_numeric_field"          "is_autocalculatable_field"
+#&gt; [13] "is_autosizable_field"      "is_valid_field_index"     
+#&gt; [15] "is_valid_field_name"       "is_extensible_index"      
+#&gt; [17] "is_valid_field_num"        "field_possible"           
+#&gt; [19] "field_reference"           "field_relation"           
+....
+```
+
+`IdfObject` is your friend.
+
+
+```r
+?IddObject
+```
+
+---
+
+## Add Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] But that may only be useful for interactive
+modifcation. How can I add objects programitically?]
+
+
+```r
+my_const &lt;- list(Construction = list("my_const", "my_mat"))
+idf$add(my_const)
+```
+
+```
+#&gt; $my_const
+#&gt; &lt;IdfObject: `Construction`&gt; [ID:499] `my_const`
+#&gt; Class: &lt;Construction&gt;
+#&gt; ├─ 1: "my_const", !- Name
+#&gt; └─ 2: "my_mat";   !- Outside Layer
+```
+
+--
+
+
+```r
+idf$object_relation("my_const", "ref_to")
+```
+
+```
+#&gt; ── Refer to Others ────────────────────────────────────────────────────────
+#&gt;   Class: &lt;Construction&gt;
+#&gt;   └─ Object [ID:499] &lt;my_const&gt;
+#&gt;      └─ 2: "my_mat";      !- Outside Layer
+#&gt;         v~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#&gt;         └─ Class: &lt;Material&gt;
+#&gt;            └─ Object [ID:498] &lt;my_mat&gt;
+#&gt;               └─ 1: "my_mat";      !- Name
+#&gt; 
+```
+
+---
+
+## Change Existing Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I change existing objects?]
+
+
+```r
+idf$set(my_mat = list(name = "new_mat"))
+```
+
+```
+#&gt; $new_mat
+#&gt; &lt;IdfObject: `Material`&gt; [ID:498] `new_mat`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "new_mat",  !- Name
+#&gt; │─ 2: "Rough",    !- Roughness
+#&gt; │─ 3: 0.2,        !- Thickness {m}
+#&gt; │─ 4: 1.5,        !- Conductivity {W/m-K}
+#&gt; │─ 5: 2000,       !- Density {kg/m3}
+#&gt; └─ 6: 800;        !- Specific Heat {J/kg-K}
+```
+
+```r
+idf$Construction$my_const
+```
+
+```
+#&gt; &lt;IdfObject: `Construction`&gt; [ID:499] `my_const`
+#&gt; Class: &lt;Construction&gt;
+#&gt; ├─ 1: "my_const", !- Name
+#&gt; └─ 2: "new_mat";  !- Outside Layer
+```
+
+---
+
+## Change Existing Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I change an object that does not have a name? Say `SimulationControl`?]
+
+
+```r
+idf$SimulationControl$Do_Zone_Sizing_Calculation &lt;- "No"
+idf$SimulationControl$set(Do_System_Sizing_Calculation = "No")
+```
+
+```
+#&gt; &lt;IdfObject: `SimulationControl`&gt; [ID:18]
+#&gt; Class: &lt;SimulationControl&gt;
+#&gt; ├─ 1: "No",       !- Do Zone Sizing Calculation
+#&gt; │─ 2: "No",       !- Do System Sizing Calculation
+#&gt; │─ 3: "No",       !- Do Plant Sizing Calculation
+#&gt; │─ 4: "Yes",      !- Run Simulation for Sizing Periods
+#&gt; └─ 5: "No";       !- Run Simulation for Weather File Run Periods
+```
+
+---
+
+## Change Existing Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I forgot to give a name to a material? How
+can I change field values of that object?]
+
+
+```r
+idf$object_id("Material")
+```
+
+```
+#&gt; $Material
+#&gt;  [1]  22  23  24  25  26  27  28  29  30  31 498
+```
+
+```r
+idf$set(..498 = list(Thickness = 0.3))
+```
+
+```
+#&gt; $new_mat
+#&gt; &lt;IdfObject: `Material`&gt; [ID:498] `new_mat`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "new_mat",  !- Name
+#&gt; │─ 2: "Rough",    !- Roughness
+#&gt; │─ 3: 0.3,        !- Thickness {m}
+#&gt; │─ 4: 1.5,        !- Conductivity {W/m-K}
+#&gt; │─ 5: 2000,       !- Density {kg/m3}
+#&gt; └─ 6: 800;        !- Specific Heat {J/kg-K}
+```
+
+---
+
+## Rename Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] `Old_Name = list(Name = "New_Name")` syntax looks wired. What if I just want to rename an object?]
+
+
+```r
+idf$rename(mat_renamed = "new_mat")
+```
+
+```
+#&gt; $mat_renamed
+#&gt; &lt;IdfObject: `Material`&gt; [ID:498] `mat_renamed`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "mat_renamed", !- Name
+#&gt; │─ 2: "Rough",       !- Roughness
+#&gt; │─ 3: 0.3,           !- Thickness {m}
+#&gt; │─ 4: 1.5,           !- Conductivity {W/m-K}
+#&gt; │─ 5: 2000,          !- Density {kg/m3}
+#&gt; └─ 6: 800;           !- Specific Heat {J/kg-K}
+```
+
+```r
+idf$Construction$my_const
+```
+
+```
+#&gt; &lt;IdfObject: `Construction`&gt; [ID:499] `my_const`
+#&gt; Class: &lt;Construction&gt;
+#&gt; ├─ 1: "my_const",    !- Name
+#&gt; └─ 2: "mat_renamed"; !- Outside Layer
+```
+
+---
+
+## Duplicate Objects
+
+
+```r
+names(idf$dup(rep("jan", 11)))
+```
+
+```
+#&gt; ── Info ───────────────────────────────────────────────────────────────────
+#&gt; New names of duplicated objects not given are automatically generated:
+#&gt;  #01| Object ID [500] --&gt; New object name `Jan_1`
+#&gt;  #02| Object ID [501] --&gt; New object name `Jan_2`
+#&gt;  #03| Object ID [502] --&gt; New object name `Jan_3`
+#&gt;  #04| Object ID [503] --&gt; New object name `Jan_4`
+#&gt;  #05| Object ID [504] --&gt; New object name `Jan_5`
+#&gt;  #06| Object ID [505] --&gt; New object name `Jan_6`
+#&gt;  #07| Object ID [506] --&gt; New object name `Jan_7`
+#&gt;  #08| Object ID [507] --&gt; New object name `Jan_8`
+#&gt;  #09| Object ID [508] --&gt; New object name `Jan_9`
+#&gt;  #10| Object ID [509] --&gt; New object name `Jan_10`
+#&gt;  #11| Object ID [510] --&gt; New object name `Jan_11`
+```
+
+```
+#&gt;  [1] "Jan_1"  "Jan_2"  "Jan_3"  "Jan_4"  "Jan_5"  "Jan_6"  "Jan_7" 
+#&gt;  [8] "Jan_8"  "Jan_9"  "Jan_10" "Jan_11"
+```
+
+---
+
+## BONUS: Paste from IDF Editor (Windows Only)
+
+
+```r
+idf$paste()
+```
+
+---
+
+## Load Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] I love copy-- paste...]
+
+--
+
+
+```r
+idf$load(
+  "Material,
+   mat-to-load, !- Name
+   rough,       !- Roughness
+   0.1,         !- Thickness {m}
+   1.5,         !- Conductivity {W/m-K}
+   2000,        !- Density {kg/m3}
+   800;         !- Specific Heat {J/kg-K}
+  "
+)
+```
+
+```
+#&gt; $`mat-to-load`
+#&gt; &lt;IdfObject: `Material`&gt; [ID:511] `mat-to-load`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "mat-to-load", !- Name
+#&gt; │─ 2: "rough",       !- Roughness
+#&gt; │─ 3: 0.1,           !- Thickness {m}
+#&gt; │─ 4: 1.5,           !- Conductivity {W/m-K}
+#&gt; │─ 5: 2000,          !- Density {kg/m3}
+#&gt; └─ 6: 800;           !- Specific Heat {J/kg-K}
+```
+
+---
+
+## Load Objects
+
+You can use either a single string or a character vector.
+
+.pull-left[
+
+```r
+idf$load(
+  "Material,
+   mat-to-load,
+   rough,
+   0.1,
+   1.5,
+   2000,
+   800;
+  "
+)
+```
+]
+
+.pull-right[
+
+```r
+idf$load(c(
+  "Material,",
+  "mat-to-load,",
+  "rough,",
+  "0.1,",
+  "1.5,",
+  "2000,",
+  "800;"
+))
+```
+]
+
+---
+
+## Load Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] You know, R is fameous for `data.frame`...]
+
+--
+
+
+```r
+idf$load(
+  data.frame(class = "Material", index = 1:6,
+             value = I(list("mat-in-df", "rough", 0.1, 0.5, 2000, 800)),
+             stringsAsFactors = FALSE
+  )
+)
+```
+
+```
+#&gt; $`mat-in-df`
+#&gt; &lt;IdfObject: `Material`&gt; [ID:512] `mat-in-df`
+#&gt; Class: &lt;Material&gt;
+#&gt; ├─ 1: "mat-in-df", !- Name
+#&gt; │─ 2: "rough",     !- Roughness
+#&gt; │─ 3: 0.1,         !- Thickness {m}
+#&gt; │─ 4: 0.5,         !- Conductivity {W/m-K}
+#&gt; │─ 5: 2000,        !- Density {kg/m3}
+#&gt; └─ 6: 800;         !- Specific Heat {J/kg-K}
+```
+
+---
+
+## Data Extraction
+
+.blue[\[<i class="fas  fa-question "></i>\] No one would like to manually create that string or data.frame...]
+
+--
+
+
+```r
+idf$to_string("mat_renamed", header = FALSE)
+```
+
+```
+#&gt;  [1] "!-   ===========  ALL OBJECTS IN CLASS: MATERIAL ==========="
+#&gt;  [2] ""                                                            
+#&gt;  [3] "Material,"                                                   
+#&gt;  [4] "    mat_renamed,             !- Name"                        
+#&gt;  [5] "    Rough,                   !- Roughness"                   
+#&gt;  [6] "    0.3,                     !- Thickness {m}"               
+#&gt;  [7] "    1.5,                     !- Conductivity {W/m-K}"        
+#&gt;  [8] "    2000,                    !- Density {kg/m3}"             
+#&gt;  [9] "    800;                     !- Specific Heat {J/kg-K}"      
+#&gt; [10] ""
+```
+
+---
+
+
+```r
+idf$to_table("mat_renamed")
+```
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; name &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; class &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; index &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; field &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; value &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 498 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mat_renamed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Material &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Name &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mat_renamed &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 498 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mat_renamed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Material &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Roughness &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Rough &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 498 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mat_renamed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Material &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Thickness &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 0.3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 498 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mat_renamed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Material &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conductivity &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 1.5 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 498 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mat_renamed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Material &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Density &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 2000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 498 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mat_renamed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Material &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Specific Heat &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 800 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+## Insert Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I want to directly insert objects from another `Idf` or design days from an `.ddy` file?]
+
+--
+
+
+```r
+ddy &lt;- read_idf(file.path("materials/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.ddy"), 8.8)
+
+names(idf$insert(ddy$SizingPeriod_DesignDay))
+```
+
+```
+#&gt;  [1] "Chicago Ohare Intl Ap Ann Htg 99.6% Condns DB"           
+#&gt;  [2] "Chicago Ohare Intl Ap Ann Htg 99% Condns DB"             
+#&gt;  [3] "Chicago Ohare Intl Ap Ann Hum_n 99.6% Condns DP=&gt;MCDB"   
+#&gt;  [4] "Chicago Ohare Intl Ap Ann Hum_n 99% Condns DP=&gt;MCDB"     
+#&gt;  [5] "Chicago Ohare Intl Ap Ann Htg Wind 99.6% Condns WS=&gt;MCDB"
+#&gt;  [6] "Chicago Ohare Intl Ap Ann Htg Wind 99% Condns WS=&gt;MCDB"  
+#&gt;  [7] "Chicago Ohare Intl Ap Ann Clg .4% Condns DB=&gt;MWB"        
+#&gt;  [8] "Chicago Ohare Intl Ap Ann Clg 1% Condns DB=&gt;MWB"         
+#&gt;  [9] "Chicago Ohare Intl Ap Ann Clg 2% Condns DB=&gt;MWB"         
+#&gt; [10] "Chicago Ohare Intl Ap Ann Clg .4% Condns WB=&gt;MDB"        
+#&gt; [11] "Chicago Ohare Intl Ap Ann Clg 1% Condns WB=&gt;MDB"         
+#&gt; [12] "Chicago Ohare Intl Ap Ann Clg 2% Condns WB=&gt;MDB"         
+#&gt; [13] "Chicago Ohare Intl Ap Ann Clg .4% Condns DP=&gt;MDB"        
+#&gt; [14] "Chicago Ohare Intl Ap Ann Clg 1% Condns DP=&gt;MDB"         
+#&gt; [15] "Chicago Ohare Intl Ap Ann Clg 2% Condns DP=&gt;MDB"         
+....
+```
+
+---
+
+## Delete Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I delete objects?]
+
+
+```r
+idf$del("mat-to-load", idf$object_id("SizingPeriod:DesignDay", simplify = TRUE))
+```
+---
+
+## Delete Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I try to delete a material that is used by an construction?]
+
+
+```r
+idf$del("mat_renamed")
+```
+
+```
+#&gt; Error: Cannot delete object(s) that are referred by others:
+#&gt; 
+#&gt;   Class: &lt;Material&gt;
+#&gt;   └─ Object [ID:498] &lt;mat_renamed&gt;
+#&gt;      └─ 1: "mat_renamed"; !- Name
+#&gt;         ^~~~~~~~~~~~~~~~~~~~~~~~~
+#&gt;         └─ Class: &lt;Construction&gt;
+#&gt;            └─ Object [ID:499] &lt;my_const&gt;
+#&gt;               └─ 2: "mat_renamed"; !- Outside Layer
+#&gt; 
+```
+
+---
+
+## Delete Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I want to delete the material and all constructions that use it?]
+
+
+```r
+idf$del("mat_renamed", .ref_by = TRUE)
+```
+
+```
+#&gt; ── Info ───────────────────────────────────────────────────────────────────
+#&gt; Deleting object(s) [ID: 498]
+#&gt; 
+#&gt; Including object(s) [ID:499] that refer to it.
+#&gt; 
+#&gt; Object relation is shown below:
+#&gt;  ── Referred by Others ─────────────────────────────────────────────────────
+#&gt;    Class: &lt;Material&gt;
+#&gt;    └─ Object [ID:498] &lt;mat_renamed&gt;
+#&gt;       └─ 1: "mat_renamed"; !- Name
+#&gt;          ^~~~~~~~~~~~~~~~~~~~~~~~~
+#&gt;          └─ Class: &lt;Construction&gt;
+#&gt;             └─ Object [ID:499] &lt;my_const&gt;
+#&gt;                └─ 2: "mat_renamed"; !- Outside Layer
+#&gt; 
+```
+
+---
+
+## Delete Objects
+
+.blue[\[<i class="fas  fa-question "></i>\] What if I want to delete a construction and all materials it uses?]
+
+
+```r
+idf$del("my_const", .ref_to = TRUE)
+```
+
+---
+
+## Check for errors
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I check for possible errors in my model just like IDF Editor does?]
+
+--
+
+
+```r
+idf$validate()
+```
+
+```
+#&gt;  ✔ No error found.
+```
+
+---
+
+.blue[\[<i class="fas  fa-question "></i>\] How kinds of checkings are there?]
+
+
+```r
+eplusr_option("validate_level")
+```
+
+```
+#&gt; [1] "final"
+```
+
+```r
+str(level_checks(eplusr_option("validate_level")))
+```
+
+```
+#&gt; List of 10
+#&gt;  $ required_object: logi TRUE
+#&gt;  $ unique_object  : logi TRUE
+#&gt;  $ unique_name    : logi TRUE
+#&gt;  $ extensible     : logi TRUE
+#&gt;  $ required_field : logi TRUE
+#&gt;  $ autofield      : logi TRUE
+#&gt;  $ type           : logi TRUE
+#&gt;  $ choice         : logi TRUE
+#&gt;  $ range          : logi TRUE
+#&gt;  $ reference      : logi TRUE
+```
+---
+
+## Save model
+
+.blue[\[<i class="fas  fa-question "></i>\] I am not quite sure if I made modifcations to the model...]
+
+--
+
+
+```r
+idf$is_unsaved()
+```
+
+```
+#&gt; [1] TRUE
+```
+
+--
+
+
+```r
+idf$save(file.path(tempdir(), "test.idf"))
+```
+
+---
+
+name: prerequiste
+class: middle, inverse
+
+## <i class="fas  fa-flushed "></i> &amp;nbsp; No big deal so far...
+
+--
+
+## .blue[<i class="fas  fa-rocket "></i> &amp;nbsp; R is a programming language!]
+
+---
+
+## Leverage the power of R
+
+.center[&lt;img src="figure/rotate_building.png" width="90%" align="center" /&gt;]
+
+.footnote[Source: https://bcl.nrel.gov/node/84693]
+
+---
+
+## Demo
+
+
+```r
+source("measures/rotate.R")
+
+rotate_building(idf, 30)
+```
+
+```
+#&gt; &lt;IdfObject: `Building`&gt; [ID:2] `Building`
+#&gt; Class: &lt;Building&gt;
+#&gt; ├─ 1: "Building",     !- Name
+#&gt; │─ 2: 60,             !- North Axis {deg}
+#&gt; │─ 3: "City",         !- Terrain
+#&gt; │─ 4: 0.04,           !- Loads Convergence Tolerance Value
+#&gt; │─ 5: 0.4,            !- Temperature Convergence Tolerance Value {delt...
+#&gt; │─ 6: "FullExterior", !- Solar Distribution
+#&gt; │─ 7: 25,             !- Maximum Number of Warmup Days
+#&gt; └─ 8: 6;              !- Minimum Number of Warmup Days
+```
+
+---
+
+## Leverage the power of R
+
+.center[&lt;img src="figure/increase-r-value-of-roof.png" width="90%" align="center" /&gt;]
+
+.footnote[Source: https://bcl.nrel.gov/node/84677]
+
+---
+
+## Demo
+
+
+```r
+source("measures/roof_r_value.R")
+
+align_roof_r_value(idf, 5)
+```
+
+```
+#&gt; ROOF-1 
+#&gt;      5
+```
+
+---
+
+class: inverse middle center
+
+# .blue[EplusJob] Class
+
+### Run and Collect Output
+
+---
+
+## Run and Collect Output
+
+.blue[\[<i class="fas  fa-question "></i>\] Finally! How can I run my simulaion?]
+
+
+```r
+idf &lt;- read_idf("materials/5ZoneWaterLoopHeatPump.idf")
+
+# make sure objects in `RunPeriod` class take effect
+idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods &lt;- "Yes"
+
+# save the model before run
+idf$save(file.path(tempdir(), "example.idf"), overwrite = TRUE)
+```
+
+---
+
+
+```r
+path_epw &lt;- file.path("materials/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
+job &lt;- idf$run(path_epw, dir = tempdir())
+```
+
+```
+#&gt; ── Info ───────────────────────────────────────────────────────────────────
+#&gt; Adding object `Output:SQLite` and setting `Option Type` to `SimpleAndTabular` in order to create SQLite output file.
+#&gt; 
+#&gt; ── Info ───────────────────────────────────────────────────────────────────
+#&gt; Replace the existing IDF located at /tmp/Rtmpg5xvmx/example.idf.
+#&gt; 
+#&gt; ExpandObjects Started.
+#&gt; No expanded file generated.
+#&gt; ExpandObjects Finished. Time:     0.058
+#&gt; EnergyPlus Starting
+#&gt; EnergyPlus, Version 8.8.0-7c3bbe4830, YMD=2019.05.15 10:56
+#&gt; Processing Data Dictionary
+#&gt; Processing Input File
+#&gt; Initializing Simulation
+#&gt; Reporting Surfaces
+#&gt; Beginning Primary Simulation
+#&gt; Initializing New Environment Parameters
+#&gt; Warming up {1}
+#&gt; Warming up {2}
+#&gt; Warming up {3}
+....
+```
+
+---
+
+## Run and Collect Output
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I see if there are errors during my simulation?]
+
+
+```r
+class(job)
+```
+
+```
+#&gt; [1] "EplusJob" "R6"
+```
+
+```r
+names(job)
+```
+
+```
+#&gt;  [1] ".__enclos_env__"  "print"            "tabular_data"    
+#&gt;  [4] "report_data"      "report_data_dict" "read_table"      
+#&gt;  [7] "list_table"       "errors"           "locate_output"   
+#&gt; [10] "output_dir"       "status"           "kill"            
+#&gt; [13] "run"              "path"             "initialize"
+```
+
+```r
+job
+```
+
+```
+#&gt; ── EnergyPlus Simulation Job ──────────────────────────────────────────────
+#&gt; * Model: `/tmp/Rtmpg5xvmx/example.idf`
+#&gt; * Weather: `/home/travis/build/hongyuanjia/eplusrIntro/materials/USA_...`
+#&gt; * EnergyPlus Version: `8.8.0`
+#&gt; * EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
+#&gt;  Simulation started at `2019-05-15 10:56:35` and completed successfully after 3.1 secs.
+```
+
+---
+
+
+```r
+job$errors()
+```
+
+```
+#&gt; ══ EnergyPlus Error File ══════════════════════════════════════════════════
+#&gt;   * EnergyPlus version: 8.8.0 (7c3bbe4830)
+#&gt;   * Simulation started: 2019-05-15 10:56:00
+#&gt;   * Terminated: FALSE
+#&gt;   * Successful: TRUE
+#&gt;   * Warning[W]: 1
+#&gt; 
+#&gt; ── During Simulation ──────────────────────────────────────────────────────
+#&gt; [W 1/1] CalcElectricChillerModel - Chiller:Electric "CENTRAL CHILLER" - Air
+#&gt;         Cooled Condenser Inlet Temperature below 0C.
+#&gt;         ... Outdoor Dry-bulb Condition = -12.60 C. Occurrence info =
+#&gt;         Chicago Ohare Intl Ap IL USA TMY3 WMO#=725300, 01/14 00:00 - 00:15
+```
+
+---
+
+## Run and Collect Output
+
+.blue[\[<i class="fas  fa-question "></i>\] How can I retrieve my simulation results?]
+
+
+```r
+job$report_data()
+```
+
+```
+#&gt;           case            datetime   key_value
+#&gt;     1: example 2019-01-21 01:00:00 Environment
+#&gt;     2: example 2019-01-21 01:00:00    PLENUM-1
+#&gt;     3: example 2019-01-21 01:00:00    PLENUM-1
+#&gt;     4: example 2019-01-21 01:00:00    PLENUM-1
+#&gt;     5: example 2019-01-21 01:00:00    SPACE1-1
+#&gt;    ---                                        
+#&gt; 14828: example 2015-07-08 00:00:00            
+#&gt; 14829: example 2015-07-08 00:00:00            
+#&gt; 14830: example 2015-07-08 00:00:00            
+#&gt; 14831: example 2015-07-08 00:00:00            
+#&gt; 14832: example 2015-07-08 00:00:00            
+#&gt;                                         name units         value
+#&gt;     1:  Site Outdoor Air Drybulb Temperature     C -1.730000e+01
+#&gt;     2: Zone Air System Sensible Heating Rate     W  0.000000e+00
+#&gt;     3: Zone Air System Sensible Cooling Rate     W  0.000000e+00
+#&gt;     4:                  Zone Air Temperature     C  1.196546e+01
+#&gt;     5: Zone Air System Sensible Heating Rate     W  3.239758e+03
+#&gt;    ---                                                          
+#&gt; 14828:                  Electricity:Facility     J  2.312195e+09
+#&gt; 14829:                  Electricity:Building     J  4.466700e+08
+#&gt; 14830:            InteriorLights:Electricity     J  2.983500e+08
+#&gt; 14831:                      Electricity:HVAC     J  1.772259e+08
+#&gt; 14832:                     Electricity:Plant     J  1.688299e+09
+```
+
+---
+
+## Run and Collect Output
+
+.blue[\[<i class="fas  fa-question "></i>\] What are the advantages of using `$report_data()`?]
+
+
+```r
+args(job$report_data)
+```
+
+```
+#&gt; function (key_value = NULL, name = NULL, year = NULL, tz = "UTC", 
+#&gt;     case = "auto", all = FALSE, period = NULL, month = NULL, 
+#&gt;     day = NULL, hour = NULL, minute = NULL, interval = NULL, 
+#&gt;     simulation_days = NULL, day_type = NULL, environment_name = NULL) 
+#&gt; NULL
+```
+
+---
+
+## Introducing Tidy Data
+
+Tidy data is a standard way of mapping the meaning of a dataset to its
+structure. A dataset is messy or tidy depending on how rows, columns and tables
+are matched up with observations, variables and types. In tidy data:
+
+* Each variable forms a column.
+
+* Each observation forms a row.
+
+* Each type of observational unit forms a table.
+
+.footnote[Source: https://www.jstatsoft.org/article/view/v059i10]
+
+---
+
+## Introducing Tidy Data
+
+.center[&lt;img src="figure/eplusout.png" width="65%" align="center" /&gt;]
+
+.center[EnergyPlus always gives untidy data]
+
+---
+
+.center[&lt;img src="figure/report_data.png" width="10%" align="center" /&gt;]
+
+
+```r
+first_line &lt;- job$report_data()[1]
+str(first_line)
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	1 obs. of  6 variables:
+#&gt;  $ case     : chr "example"
+#&gt;  $ datetime : POSIXct, format: "2019-01-21 01:00:00"
+#&gt;  $ key_value: chr "Environment"
+#&gt;  $ name     : chr "Site Outdoor Air Drybulb Temperature"
+#&gt;  $ units    : chr "C"
+#&gt;  $ value    : num -17.3
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+`SPACE1-1: Zone Air System Sensible Heating Rate [W](Hourly)`:
+
+* .blue[key_value] --&gt; `SPACE1-1`
+* .blue[name] --&gt; `Zone Air System Sensible Heating Rate`
+* .blue[units] --&gt; `W`
+
+---
+
+.blue[Get all available report variable keys and names]
+
+
+```r
+str(job$report_data_dict())
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	166 obs. of  10 variables:
+#&gt;  $ report_data_dictionary_index: int  6 11 12 21 22 41 42 299 300 301 ...
+#&gt;  $ is_meter                    : int  0 1 1 1 1 1 1 0 0 0 ...
+#&gt;  $ type                        : chr  "Avg" "Sum" "Sum" "Sum" ...
+#&gt;  $ index_group                 : chr  "Zone" "Facility:Electricity" "Facility:Electricity" "Building:Electricity" ...
+#&gt;  $ timestep_type               : chr  "HVAC System" "HVAC System" "HVAC System" "HVAC System" ...
+#&gt;  $ key_value                   : chr  "Environment" "" "" "" ...
+#&gt;  $ name                        : chr  "Site Outdoor Air Drybulb Temperature" "Electricity:Facility" "Electricity:Facility" "Electricity:Building" ...
+#&gt;  $ reporting_frequency         : chr  "Hourly" "Monthly" "Run Period" "Monthly" ...
+#&gt;  $ schedule_name               : chr  NA NA NA NA ...
+#&gt;  $ units                       : chr  "C" "J" "J" "J" ...
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+---
+
+.blue[Get air temperature for all zones]
+
+
+```r
+job$report_data(name = "zone air temperature")
+```
+
+--
+
+.blue[Get air temperature for zone `SPACE1-1` only]
+
+
+```r
+job$report_data("space1-1", "zone air temperature")
+```
+
+---
+
+.blue[Directly use `$report_data_dict()` to extract results]
+
+
+```r
+dict &lt;- job$report_data_dict()
+str(job$report_data(dict[is_meter == 1]))
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	48 obs. of  6 variables:
+#&gt;  $ case     : chr  "example" "example" "example" "example" ...
+#&gt;  $ datetime : POSIXct, format: "2019-01-22" "2019-01-22" ...
+#&gt;  $ key_value: chr  "" "" "" "" ...
+#&gt;  $ name     : chr  "Electricity:Facility" "Electricity:Building" "InteriorLights:Electricity" "Electricity:HVAC" ...
+#&gt;  $ units    : chr  "J" "J" "J" "J" ...
+#&gt;  $ value    : num  4.80e+08 1.19e+08 3.24e+07 3.57e+08 1.17e+10 ...
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+---
+
+.blue[Real `DateTime`]
+
+
+```r
+str(job$report_data("space1-1", "zone air temperature")$datetime)
+```
+
+```
+#&gt;  POSIXct[1:96], format: "2019-01-21 01:00:00" "2019-01-21 02:00:00" ...
+```
+
+--
+
+.blue[Change the year value of returned date time]
+
+
+```r
+job$report_data(year = 2017)
+```
+
+--
+
+.blue[Change the time zone of returned date time]
+
+
+```r
+lubridate::tz(job$report_data(tz = "Asia/Singapore")$datetime)
+```
+
+```
+#&gt; [1] "Asia/Singapore"
+```
+
+---
+
+.blue[Make sure start day of week matches!]
+
+.pull-left[
+
+```r
+idf$RunPeriod[[1]]$value(1:6)
+```
+
+```
+#&gt; $Name
+#&gt; [1] NA
+#&gt; 
+#&gt; $`Begin Month`
+#&gt; [1] 1
+#&gt; 
+#&gt; $`Begin Day of Month`
+#&gt; [1] 14
+#&gt; 
+#&gt; $`End Month`
+#&gt; [1] 1
+#&gt; 
+#&gt; $`End Day of Month`
+#&gt; [1] 14
+#&gt; 
+#&gt; $`Day of Week for Start Day`
+#&gt; [1] "Tuesday"
+```
+]
+
+.pull-right[
+
+```r
+idf$RunPeriod[[2]]$value(1:6)
+```
+
+```
+#&gt; $Name
+#&gt; [1] NA
+#&gt; 
+#&gt; $`Begin Month`
+#&gt; [1] 7
+#&gt; 
+#&gt; $`Begin Day of Month`
+#&gt; [1] 7
+#&gt; 
+#&gt; $`End Month`
+#&gt; [1] 7
+#&gt; 
+#&gt; $`End Day of Month`
+#&gt; [1] 7
+#&gt; 
+#&gt; $`Day of Week for Start Day`
+#&gt; [1] "Tuesday"
+```
+]
+
+---
+
+
+```r
+idf$object("clg-setp-sch")
+```
+
+```
+#&gt; &lt;IdfObject: `Schedule:Compact`&gt; [ID:134] `CLG-SETP-SCH`
+#&gt; Class: &lt;Schedule:Compact&gt;
+#&gt; ├─ 01: "CLG-SETP-SCH",     !- Name
+#&gt; │─ 02: "TEMPERATURE",      !- Schedule Type Limits Name
+#&gt; │─ 03: "Through: 12/31",   !- Field 1
+#&gt; │─ 04: "For: Weekdays CustomDay1 CustomDay2",  !- Field 2
+#&gt; │─ 05: "Until: 7:00",      !- Field 3
+#&gt; │─ 06: "40.00",            !- Field 4
+#&gt; │─ 07: "Until: 18:00",     !- Field 5
+#&gt; │─ 08: "23.90",            !- Field 6
+#&gt; │─ 09: "Until: 24:00",     !- Field 7
+#&gt; │─ 10: "40.00",            !- Field 8
+#&gt; │─ 11: "For: Weekends Holidays",  !- Field 9
+#&gt; │─ 12: "Until: 7:00",      !- Field 10
+#&gt; │─ 13: "40.00",            !- Field 11
+#&gt; │─ 14: "Until: 13:00",     !- Field 12
+#&gt; │─ 15: "23.90",            !- Field 13
+#&gt; │─ 16: "Until: 24:00",     !- Field 14
+#&gt; │─ 17: "32.20",            !- Field 15
+#&gt; │─ 18: "For: SummerDesignDay",  !- Field 16
+....
+```
+
+---
+
+
+```r
+temp &lt;- job$report_data("space1-1", "zone air temperature", all = TRUE, year = 2018)
+library(ggplot2)
+temp %&gt;%
+  ggplot() +
+  geom_line(aes(datetime, value)) +
+  facet_wrap(vars(month, day), labeller = "label_both", scales = "free_x")
+```
+
+&lt;img src="figure/unnamed-chunk-65-1.png" width="864" height="50%" style="display: block; margin: auto;" /&gt;
+
+---
+
+.blue[Precisely control time period]
+
+Get the total cooling rate power of AHU named `Heat Pump Cooling Mode AHU1` at
+11 a.m for the first day of all runperiod, tag this simulation as case
+`example`, and return all possible output columns.
+
+
+```r
+job$report_data(
+  key_value = "heat pump cooling mode ahu1",
+  name = "cooling coil total cooling rate", case = "example",
+  all = TRUE, simulation_days = 1, hour = 11, minute = 0) %&gt;%
+str()
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	4 obs. of  21 variables:
+#&gt;  $ case               : chr  "example" "example" "example" "example"
+#&gt;  $ datetime           : POSIXct, format: "2019-01-21 11:00:00" "2014-07-21 11:00:00" ...
+#&gt;  $ month              : int  1 7 1 7
+#&gt;  $ day                : int  21 21 14 7
+#&gt;  $ hour               : int  11 11 11 11
+#&gt;  $ minute             : int  0 0 0 0
+#&gt;  $ dst                : int  0 0 0 0
+#&gt;  $ interval           : int  60 60 60 60
+#&gt;  $ simulation_days    : int  1 1 1 1
+....
+```
+
+---
+
+.blue[Extract tabular data using `$tabular_data()`]
+
+.center[&lt;img src="figure/tabular_data.png" align="center" /&gt;]
+
+
+```r
+job$tabular_data(
+  report_name = "ComponentSizingSummary",
+  report_for = "entire facility",
+  table_name = "airterminal:singleduct:uncontrolled",
+  column_name = "user-specified maximum air flow rate",
+  row_name = "space5-1 direct air"
+)
+```
+
+---
+
+## Other useful data you can retrieve from EnergyPlus SQL output
+
+.blue[Get summary data of all materials]
+
+
+```r
+str(job$read_table("Materials"))
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	23 obs. of  14 variables:
+#&gt;  $ material_index : int  1 2 3 4 5 6 7 8 9 10 ...
+#&gt;  $ name           : chr  "WD10" "RG01" "BR01" "IN46" ...
+#&gt;  $ material_type  : int  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ roughness      : int  4 2 1 1 4 4 2 4 4 3 ...
+#&gt;  $ conductivity   : num  0.115 1.442 0.162 0.023 0.115 ...
+#&gt;  $ density        : num  513 881 1121 24 513 ...
+#&gt;  $ iso_moist_cap  : num  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ porosity       : num  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ resistance     : num  5.8 0.00881 0.05864 3.31304 0.16609 ...
+#&gt;  $ r_only         : int  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ spec_heat      : num  1381 1674 1464 1590 1381 ...
+#&gt;  $ therm_grad_coef: num  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ thickness      : num  0.667 0.0127 0.0095 0.0762 0.0191 ...
+#&gt;  $ vapor_diffus   : num  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+---
+
+.blue[Get summary data of all constructions]
+
+
+```r
+str(job$read_table("Constructions"))
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	7 obs. of  14 variables:
+#&gt;  $ construction_index    : int  1 2 3 4 5 6 7
+#&gt;  $ name                  : chr  "ROOF-1" "WALL-1" "CLNG-1" "FLOOR-SLAB-1" ...
+#&gt;  $ total_layers          : int  4 4 1 1 3 3 1
+#&gt;  $ total_solid_layers    : int  0 0 0 0 0 2 1
+#&gt;  $ total_glass_layers    : int  0 0 0 0 0 2 1
+#&gt;  $ inside_absorp_vis     : num  0.78 0.75 0.65 0.65 0.75 0 0
+#&gt;  $ outside_absorp_vis    : num  0.65 0.78 0.65 0.65 0.75 0 0
+#&gt;  $ inside_absorp_solar   : num  0.78 0.75 0.65 0.65 0.75 0 0
+#&gt;  $ outside_absorp_solar  : num  0.65 0.78 0.65 0.65 0.75 0 0
+#&gt;  $ inside_absorp_thermal : num  0.9 0.9 0.65 0.9 0.9 0.84 0.84
+#&gt;  $ outside_absorp_thermal: num  0.9 0.9 0.65 0.9 0.9 0.84 0.84
+#&gt;  $ outside_roughness     : int  2 4 2 3 4 6 6
+#&gt;  $ type_is_window        : int  0 0 0 0 0 1 1
+#&gt;  $ uvalue                : num  0.282 0.408 1.533 12.894 2.811 ...
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+---
+
+.blue[Get summary data of all surfaces]
+
+
+```r
+str(job$read_table("Surfaces"))
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	50 obs. of  20 variables:
+#&gt;  $ surface_index     : int  1 2 3 4 5 6 7 8 9 10 ...
+#&gt;  $ surface_name      : chr  "MAIN SOUTH OVERHANG" "Mir-MAIN SOUTH OVERHANG" "SOUTH DOOR OVERHANG" "Mir-SOUTH DOOR OVERHANG" ...
+#&gt;  $ construction_index: int  NA NA NA NA 2 2 2 2 3 3 ...
+#&gt;  $ class_name        : chr  "Shading" "Shading" "Shading" "Shading" ...
+#&gt;  $ area              : num  25.7 25.7 6.2 6.2 18.3 ...
+#&gt;  $ gross_area        : num  25.7 25.7 6.2 6.2 18.3 ...
+#&gt;  $ perimeter         : num  42.2 42.2 10.2 10.2 62.2 ...
+#&gt;  $ azimuth           : num  210 30 210 30 210 120 30 300 30 300 ...
+#&gt;  $ height            : num  1.3 1.3 2 2 0.6 ...
+#&gt;  $ reveal            : num  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ shape             : int  3 3 3 3 3 3 3 3 2 2 ...
+#&gt;  $ sides             : int  4 4 4 4 4 4 4 4 4 4 ...
+#&gt;  $ tilt              : num  180 0 180 0 90 90 90 90 180 180 ...
+#&gt;  $ width             : num  19.8 19.8 3.1 3.1 30.5 ...
+#&gt;  $ heat_transfer_surf: int  0 0 0 0 1 1 1 1 1 1 ...
+#&gt;  $ base_surface_index: int  NA NA NA NA 5 6 7 8 9 10 ...
+#&gt;  $ zone_index        : int  NA NA NA NA 1 1 1 1 1 1 ...
+#&gt;  $ ext_bound_cond    : int  0 0 0 0 0 0 0 0 22 29 ...
+#&gt;  $ ext_solar         : int  1 1 1 1 1 1 1 1 0 0 ...
+#&gt;  $ ext_wind          : int  1 1 1 1 1 1 1 1 0 0 ...
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+---
+
+.blue[Get summary data of all zones]
+
+
+```r
+str(job$read_table("Zones"))
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	6 obs. of  27 variables:
+#&gt;  $ zone_index             : int  1 2 3 4 5 6
+#&gt;  $ zone_name              : chr  "PLENUM-1" "SPACE1-1" "SPACE2-1" "SPACE3-1" ...
+#&gt;  $ rel_north              : num  0 0 0 0 0 0
+#&gt;  $ origin_x               : num  0 0 0 0 0 0
+#&gt;  $ origin_y               : num  0 0 0 0 0 0
+#&gt;  $ origin_z               : num  0 0 0 0 0 0
+#&gt;  $ centroid_x             : num  17.01 14.06 28.88 19.98 5.15 ...
+#&gt;  $ centroid_y             : num  -1.04 -6.15 -7.88 4.1 5.82 ...
+#&gt;  $ centroid_z             : num  2.7 1.2 1.2 1.2 1.2 1.2
+#&gt;  $ of_type                : int  1 1 1 1 1 1
+#&gt;  $ multiplier             : num  1 1 1 1 1 1
+#&gt;  $ list_multiplier        : num  1 1 1 1 1 1
+#&gt;  $ minimum_x              : num  0 0 25.1 7.6 0 ...
+#&gt;  $ maximum_x              : num  34 26.4 34 34 9 ...
+#&gt;  $ minimum_y              : num  -15.25 -15.25 -15.25 -3.35 0 ...
+#&gt;  $ maximum_y              : num  13.16 1.35 -2.09 13.16 13.16 ...
+#&gt;  $ minimum_z              : num  2.4 0 0 0 0 0
+#&gt;  $ maximum_z              : num  3 2.4 2.4 2.4 2.4 2.4
+#&gt;  $ ceiling_height         : num  0.61 2.44 2.44 2.44 2.44 ...
+#&gt;  $ volume                 : num  283 239 103 239 103 ...
+#&gt;  $ inside_convection_algo : int  1 1 1 1 1 1
+#&gt;  $ outside_convection_algo: int  1 1 1 1 1 1
+#&gt;  $ floor_area             : num  463.6 99.2 42.7 96.5 42.7 ...
+#&gt;  $ ext_gross_wall_area    : num  54.8 73.2 36.5 73.2 36.5 ...
+#&gt;  $ ext_net_wall_area      : num  54.8 51.4 27.4 52.4 27.4 ...
+#&gt;  $ ext_window_area        : num  0 21.81 9.12 20.85 9.12 ...
+#&gt;  $ is_part_of_total_area  : int  1 1 1 1 1 1
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+---
+
+.blue[Other resources]
+
+
+```r
+job$list_table()
+```
+
+```
+#&gt;  [1] "ComponentSizes"               "ConstructionLayers"          
+#&gt;  [3] "Constructions"                "DaylightMapHourlyData"       
+#&gt;  [5] "DaylightMapHourlyReports"     "DaylightMaps"                
+#&gt;  [7] "EnvironmentPeriods"           "Errors"                      
+#&gt;  [9] "Materials"                    "NominalBaseboardHeaters"     
+#&gt; [11] "NominalElectricEquipment"     "NominalGasEquipment"         
+#&gt; [13] "NominalHotWaterEquipment"     "NominalInfiltration"         
+#&gt; [15] "NominalLighting"              "NominalOtherEquipment"       
+#&gt; [17] "NominalPeople"                "NominalSteamEquipment"       
+#&gt; [19] "NominalVentilation"           "ReportData"                  
+#&gt; [21] "ReportDataDictionary"         "ReportExtendedData"          
+#&gt; [23] "ReportMeterData"              "ReportMeterDataDictionary"   
+#&gt; [25] "ReportMeterExtendedData"      "ReportVariableData"          
+#&gt; [27] "ReportVariableDataDictionary" "ReportVariableExtendedData"  
+#&gt; [29] "ReportVariableWithTime"       "RoomAirModels"               
+#&gt; [31] "Schedules"                    "Simulations"                 
+#&gt; [33] "StringTypes"                  "Strings"                     
+#&gt; [35] "Surfaces"                     "SystemSizes"                 
+#&gt; [37] "TabularData"                  "TabularDataWithStrings"      
+#&gt; [39] "Time"                         "ZoneGroups"                  
+#&gt; [41] "ZoneInfoZoneLists"            "ZoneLists"                   
+#&gt; [43] "ZoneSizes"                    "Zones"
+```
+
+---
+
+class: inverse middle center
+
+# .blue[ParametricJob] Class
+
+### Conduct Parametric Simulations
+
+---
+
+## Create a parametric job
+
+
+```r
+param &lt;- param_job(idf, "materials/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
+param
+```
+
+```
+#&gt; ── EnergPlus Parametric Job ───────────────────────────────────────────────
+#&gt; Seed Model: `/tmp/Rtmpg5xvmx/example.idf`
+#&gt; Weather: `/home/travis/build/hongyuanjia/eplusrIntro/materials/USA_IL_...
+#&gt; EnergyPlus Version: `8.8.0`
+#&gt; EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
+#&gt; &lt;&lt; No measure has been applied &gt;&gt;
+```
+---
+
+## Apply measures
+
+.blue[Apply a single measure]
+
+
+```r
+rotate &lt;- function (idf, degree) {
+    rotate_building(idf, degree)
+    idf
+}
+
+param$apply_measure(rotate, seq(0, 180, 30), .names = paste0("degree_", seq(0, 180, 30)))
+```
+
+```
+#&gt; Measure `rotate` has been applied with 7 new models created:
+#&gt; 1: degree_0
+#&gt; 2: degree_30
+#&gt; 3: degree_60
+#&gt; 4: degree_90
+#&gt; 5: degree_120
+#&gt; 6: degree_150
+#&gt; 7: degree_180
+```
+
+---
+
+.blue[Apply multiple measures]
+
+
+```r
+# get all combinations
+comb &lt;- cross_df(list(degree = seq(0, 180, 60), r_value = c(3.55, 3.7)))
+comb$name &lt;- paste("case", comb$degree, comb$r_value, sep = "_")
+
+rotate_and_align_r_value &lt;- function (idf, degree, expect_r_value) {
+    rotate_building(idf, degree)
+
+    align_roof_r_value(idf, expect_r_value)
+
+    idf
+}
+
+param$apply_measure(rotate_and_align_r_value, comb$degree, comb$r_value, .names = comb$name)
+```
+
+```
+#&gt; Measure `rotate_and_align_r_value` has been applied with 8 new models created:
+#&gt; 1: case_0_3.55
+#&gt; 2: case_60_3.55
+#&gt; 3: case_120_3.55
+#&gt; 4: case_180_3.55
+#&gt; 5: case_0_3.7
+#&gt; 6: case_60_3.7
+#&gt; 7: case_120_3.7
+#&gt; 8: case_180_3.7
+```
+
+---
+
+## Run Parametric Simulations
+
+
+```r
+param$run(tempdir())
+```
+
+
+
+---
+
+## Extract Simulation Output
+
+
+```r
+param$errors()
+```
+
+```
+#&gt; $case_0_3.55
+#&gt; ══ EnergyPlus Error File ══════════════════════════════════════════════════
+#&gt;   * EnergyPlus version: 8.8.0 (7c3bbe4830)
+#&gt;   * Simulation started: 2019-05-15 10:57:00
+#&gt;   * Terminated: FALSE
+#&gt;   * Successful: TRUE
+#&gt;   * Warning[W]: 1
+#&gt; 
+#&gt; ── During Simulation ──────────────────────────────────────────────────────
+#&gt; [W 1/1] CalcElectricChillerModel - Chiller:Electric "CENTRAL CHILLER" - Air
+#&gt;         Cooled Condenser Inlet Temperature below 0C.
+#&gt;         ... Outdoor Dry-bulb Condition = -12.60 C. Occurrence info =
+#&gt;         Chicago Ohare Intl Ap IL USA TMY3 WMO#=725300, 01/14 00:00 - 00:15
+#&gt; 
+#&gt; $case_60_3.55
+#&gt; ══ EnergyPlus Error File ══════════════════════════════════════════════════
+#&gt;   * EnergyPlus version: 8.8.0 (7c3bbe4830)
+#&gt;   * Simulation started: 2019-05-15 10:57:00
+....
+```
+
+---
+
+.blue[Does building orientation and roof thermal property influence sensible cooling loads??]
+
+
+```r
+cooling_rate &lt;- param$report_data(NULL, name = "Zone Air System Sensible Cooling Rate", month = 7, all = TRUE)
+
+# exclude design day data
+cooling_rate_nodes &lt;- cooling_rate[!grepl("DesignDay", day_type)]
+
+# plot
+cooling_rate_nodes %&gt;%
+    ggplot() +
+    geom_line(aes(datetime, value, group = case, color = case)) +
+    facet_wrap(vars(key_value)) +
+    scale_y_continuous(name = "Air System Sensible Cooling Rate / W")
+```
+
+---
+
+&lt;img src="figure/unnamed-chunk-80-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: inverse middle center
+
+# .blue[Epw] Class
+
+### Modify EnergyPlus Weather
+
+---
+
+## Read EPW file
+
+
+```r
+epw &lt;- read_epw(path_epw)
+epw
+```
+
+```
+#&gt; ══ EnergyPlus Weather File ════════════════════════════════════════════════
+#&gt; [Location ]: Chicago Ohare Intl Ap, IL, USA
+#&gt;              {N 41°58'}, {W 87°55'}, {UTC-06:00}
+#&gt; [Elevation]: 201m above see level
+#&gt; [Data Src ]: TMY3
+#&gt; [WMO Stat ]: 725300
+#&gt; [Leap Year]: FALSE
+#&gt; [Interval ]: 60 mins
+#&gt; 
+#&gt; ── Data Periods ───────────────────────────────────────────────────────────
+#&gt;    Name StartDayOfWeek StartDay EndDay
+#&gt; 1: Data         Sunday     1/ 1  12/31
+#&gt; 
+#&gt; ───────────────────────────────────────────────────────────────────────────
+```
+
+---
+
+## Query and Modify Headers
+
+.blue[Get location data]
+
+
+```r
+str(epw$location())
+```
+
+```
+#&gt; List of 9
+#&gt;  $ city          : chr "Chicago Ohare Intl Ap"
+#&gt;  $ state_province: chr "IL"
+#&gt;  $ country       : chr "USA"
+#&gt;  $ data_source   : chr "TMY3"
+#&gt;  $ wmo_number    : chr "725300"
+#&gt;  $ latitude      : num 42
+#&gt;  $ longitude     : num -87.9
+#&gt;  $ time_zone     : int -6
+#&gt;  $ elevation     : num 201
+```
+
+---
+
+.blue[Modify location data]
+
+
+```r
+str(epw$location(city = "my_city", state_province = "my_state", country = "my_country"))
+```
+
+```
+#&gt; List of 9
+#&gt;  $ city          : chr "my_city"
+#&gt;  $ state_province: chr "my_state"
+#&gt;  $ country       : chr "my_country"
+#&gt;  $ data_source   : chr "TMY3"
+#&gt;  $ wmo_number    : chr "725300"
+#&gt;  $ latitude      : num 42
+#&gt;  $ longitude     : num -87.9
+#&gt;  $ time_zone     : int -6
+#&gt;  $ elevation     : num 201
+```
+
+---
+
+.blue[Get design condition data]
+
+
+```r
+str(epw$design_condition())
+```
+
+```
+#&gt; List of 4
+#&gt;  $ source  : chr "Climate Design Data 2009 ASHRAE Handbook"
+#&gt;  $ heating :List of 15
+#&gt;   ..$ coldest_month           : int 1
+#&gt;   ..$ heating_db_99.6         : num -20
+#&gt;   ..$ heating_db_99.0         : num -16.6
+#&gt;   ..$ humidification_dp_99.6  : num -25.7
+#&gt;   ..$ humidification_hr_99.6  : num 0.4
+#&gt;   ..$ humidification_mcdb_99.6: num -19.2
+#&gt;   ..$ humidification_dp_99.0  : num -22.1
+#&gt;   ..$ humidification_hr_99.0  : num 0.5
+#&gt;   ..$ humidification_mcdb_99.0: num -15.7
+#&gt;   ..$ coldest_month_ws_0.4    : num 12.4
+#&gt;   ..$ coldest_month_mcdb_0.4  : num -3.5
+#&gt;   ..$ coldest_month_ws_1.0    : num 11.4
+....
+```
+
+---
+
+
+```r
+epw$typical_extreme_period()
+```
+
+```
+#&gt;    index                                                 name    type
+#&gt; 1:     1     Summer - Week Nearest Max Temperature For Period extreme
+#&gt; 2:     2 Summer - Week Nearest Average Temperature For Period typical
+#&gt; 3:     3     Winter - Week Nearest Min Temperature For Period extreme
+#&gt; 4:     4 Winter - Week Nearest Average Temperature For Period typical
+#&gt; 5:     5 Autumn - Week Nearest Average Temperature For Period typical
+#&gt; 6:     6 Spring - Week Nearest Average Temperature For Period typical
+#&gt;    start_day end_day
+#&gt; 1:      7/13    7/19
+#&gt; 2:      8/24    8/30
+#&gt; 3:      1/27    2/ 2
+#&gt; 4:     12/22   12/28
+#&gt; 5:     10/27   11/ 2
+#&gt; 6:      4/26    5/ 2
+```
+
+---
+
+
+```r
+str(epw$ground_temperature())
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	36 obs. of  7 variables:
+#&gt;  $ index             : int  1 1 1 1 1 1 1 1 1 1 ...
+#&gt;  $ depth             : num  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 ...
+#&gt;  $ month             : int  1 2 3 4 5 6 7 8 9 10 ...
+#&gt;  $ soil_conductivity : num  NA NA NA NA NA NA NA NA NA NA ...
+#&gt;  $ soil_density      : num  NA NA NA NA NA NA NA NA NA NA ...
+#&gt;  $ soil_specific_heat: num  NA NA NA NA NA NA NA NA NA NA ...
+#&gt;  $ temperature       : num  -1.89 -3.06 -0.99 2.23 10.68 ...
+#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;
+```
+
+---
+
+.blue[Get leap year flag, daylight saving time and holidays]
+
+
+```r
+epw$holiday()
+```
+
+```
+#&gt; $leapyear
+#&gt; [1] FALSE
+#&gt; 
+#&gt; $dst
+#&gt; [1] "0 &lt;empty&gt;" "0 &lt;empty&gt;"
+#&gt; 
+#&gt; $holiday
+#&gt; Null data.table (0 rows and 0 cols)
+```
+
+---
+
+.blue[Add daylight saving time period]
+
+
+```r
+epw$holiday(dst = c("3.10", "11.3"))
+```
+
+```
+#&gt; $leapyear
+#&gt; [1] FALSE
+#&gt; 
+#&gt; $dst
+#&gt; [1] "Mar 10" "Nov 03"
+#&gt; 
+#&gt; $holiday
+#&gt; Null data.table (0 rows and 0 cols)
+```
+
+```r
+epw$holiday(dst = c("2nd Sunday in March", "1st Sunday in November"))
+```
+
+```
+#&gt; $leapyear
+#&gt; [1] FALSE
+#&gt; 
+#&gt; $dst
+#&gt; [1] "2nd Sunday in March"    "1st Sunday in November"
+#&gt; 
+#&gt; $holiday
+#&gt; Null data.table (0 rows and 0 cols)
+```
+
+---
+
+.blue[Add holidays]
+
+
+```r
+epw$holiday(holiday = list(name = c("New Year's Day", "Christmas Day"), day = c("1.1", "25 Dec")))
+```
+
+```
+#&gt; $leapyear
+#&gt; [1] FALSE
+#&gt; 
+#&gt; $dst
+#&gt; [1] "2nd Sunday in March"    "1st Sunday in November"
+#&gt; 
+#&gt; $holiday
+#&gt;              name   day
+#&gt; 1: New Year's Day  1/ 1
+#&gt; 2:  Christmas Day 12/25
+```
+
+---
+
+.blue[Get and modify comments]
+
+
+```r
+epw$comment1()
+```
+
+```
+#&gt; [1] "Custom/User Format -- WMO#725300; NREL TMY Data Set (2008); Period of Record 1973-2005 (Generally)"
+```
+
+```r
+epw$comment2()
+```
+
+```
+#&gt; [1] " -- Ground temps produced with a standard soil diffusivity of 2.3225760E-03 {m**2/day}"
+```
+
+
+```r
+epw$comment1("new comment1")
+```
+
+```
+#&gt; [1] "new comment1"
+```
+
+```r
+epw$comment2("new comment2")
+```
+
+```
+#&gt; [1] "new comment2"
+```
+
+---
+
+.blue[Get total number of data periods]
+
+
+```r
+epw$num_period()
+```
+
+```
+#&gt; [1] 1
+```
+
+--
+
+.blue[Get number of observations per hour]
+
+
+```r
+epw$interval()
+```
+
+```
+#&gt; [1] 1
+```
+
+--
+
+.blue[Get data period]
+
+
+```r
+epw$period()
+```
+
+```
+#&gt;    index name start_day_of_week start_day end_day
+#&gt; 1:     1 Data                 7      1/ 1   12/31
+```
+
+---
+
+## Weather Data Specifications
+
+
+```r
+str(epw$missing_code())
+```
+
+```
+#&gt; List of 29
+#&gt;  $ dry_bulb_temperature                            : num 99.9
+#&gt;  $ dew_point_temperature                           : num 99.9
+#&gt;  $ relative_humidity                               : num 999
+#&gt;  $ atmospheric_pressure                            : num 1e+06
+#&gt;  $ extraterrestrial_horizontal_radiation           : num 9999
+#&gt;  $ extraterrestrial_direct_normal_radiation        : num 9999
+#&gt;  $ horizontal_infrared_radiation_intensity_from_sky: num 9999
+#&gt;  $ global_horizontal_radiation                     : num 9999
+#&gt;  $ direct_normal_radiation                         : num 1e+06
+#&gt;  $ diffuse_horizontal_radiation                    : num 9999
+#&gt;  $ global_horizontal_illuminance                   : num 1e+06
+#&gt;  $ direct_normal_illuminance                       : num 1e+06
+#&gt;  $ diffuse_horizontal_illuminance                  : num 1e+06
+#&gt;  $ zenith_luminance                                : num 99990
+....
+```
+
+---
+
+
+```r
+str(epw$initial_missing_value())
+```
+
+```
+#&gt; List of 16
+#&gt;  $ dry_bulb_temperature : num 6
+#&gt;  $ dew_point_temperature: num 3
+#&gt;  $ relative_humidity    : num 50
+#&gt;  $ wind_speed           : num 2.5
+#&gt;  $ wind_direction       : num 180
+#&gt;  $ total_sky_cover      : int 5
+#&gt;  $ opaque_sky_cover     : int 5
+#&gt;  $ visibility           : num 778
+#&gt;  $ ceiling              : num 77777
+#&gt;  $ precipitable_water   : num 0
+#&gt;  $ aerosol_optical_depth: num 0
+#&gt;  $ snow_depth           : num 0
+#&gt;  $ days_since_last_snow : int 88
+#&gt;  $ albedo               : num 0
+....
+```
+
+---
+
+
+```r
+epw$range_exist()
+```
+
+```
+#&gt; $wind_direction
+#&gt; [0, 360] 
+#&gt; 
+#&gt; $present_weather_observation
+#&gt; [0, 9] 
+#&gt; 
+#&gt; $dry_bulb_temperature
+#&gt; (-Inf, 99.9) 
+#&gt; 
+#&gt; $dew_point_temperature
+#&gt; (-Inf, 99.9) 
+#&gt; 
+#&gt; $relative_humidity
+#&gt; [0, 999) 
+#&gt; 
+....
+```
+
+---
+
+
+```r
+epw$range_valid()
+```
+
+```
+#&gt; $dry_bulb_temperature
+#&gt; [-90, 70] 
+#&gt; 
+#&gt; $dew_point_temperature
+#&gt; [-90, 70] 
+#&gt; 
+#&gt; $relative_humidity
+#&gt; [0, 110] 
+#&gt; 
+#&gt; $atmospheric_pressure
+#&gt; (31000, 120000] 
+#&gt; 
+#&gt; $global_horizontal_illuminance
+#&gt; [0, 999900) 
+#&gt; 
+....
+```
+
+---
+
+
+```r
+epw$fill_action("missing")
+```
+
+```
+#&gt; $use_previous
+#&gt;  [1] "dry_bulb_temperature"  "atmospheric_pressure" 
+#&gt;  [3] "relative_humidity"     "dew_point_temperature"
+#&gt;  [5] "wind_speed"            "wind_direction"       
+#&gt;  [7] "total_sky_cover"       "opaque_sky_cover"     
+#&gt;  [9] "snow_depth"            "liquid_precip_depth"  
+#&gt; 
+#&gt; $use_zero
+#&gt; [1] "direct_normal_radiation"      "diffuse_horizontal_radiation"
+```
+
+---
+
+
+```r
+epw$fill_action("out_of_range")
+```
+
+```
+#&gt; $do_nothing
+#&gt; [1] "dry_bulb_temperature"  "relative_humidity"     "dew_point_temperature"
+#&gt; [4] "wind_direction"        "wind_speed"           
+#&gt; 
+#&gt; $use_zero
+#&gt; [1] "direct_normal_radiation"      "diffuse_horizontal_radiation"
+#&gt; 
+#&gt; $use_previous
+#&gt; [1] "atmospheric_pressure"
+```
+
+---
+
+## Get Weather Data
+
+
+```r
+str(epw$data(1))
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	8760 obs. of  36 variables:
+#&gt;  $ datetime                                        : POSIXct, format: "2017-01-01 01:00:00" "2017-01-01 02:00:00" ...
+#&gt;  $ year                                            : int  1986 1986 1986 1986 1986 1986 1986 1986 1986 1986 ...
+#&gt;  $ month                                           : int  1 1 1 1 1 1 1 1 1 1 ...
+#&gt;  $ day                                             : int  1 1 1 1 1 1 1 1 1 1 ...
+#&gt;  $ hour                                            : int  1 2 3 4 5 6 7 8 9 10 ...
+#&gt;  $ minute                                          : int  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ datasource                                      : chr  "?9?9?9?9E0?9?9?9?9?9?9?9?9?9?9?9?9?9?9*_*9*9*9*9*9" "?9?9?9?9E0?9?9?9?9?9?9?9?9?9?9?9?9?9?9*_*9*9*9*9*9" "?9?9?9?9E0?9?9?9?9?9?9?9?9?9?9?9?9?9?9*_*9*9*9*9*9" "?9?9?9?9E0?9?9?9?9?9?9?9?9?9?9?9?9?9?9*_*9*9*9*9*9" ...
+#&gt;  $ dry_bulb_temperature                            : num  -12.2 -11.7 -11.1 -11.1 -10.6 -10.6 -10.6 -10 -8.9 -6.7 ...
+#&gt;  $ dew_point_temperature                           : num  -16.1 -15.6 -15 -15 -14.4 -14.4 -13.9 -13.3 -13.3 -13.3 ...
+#&gt;  $ relative_humidity                               : num  73 73 73 73 73 73 77 77 71 60 ...
+#&gt;  $ atmospheric_pressure                            : num  99500 99600 99500 99500 99500 99500 99500 99500 99500 99500 ...
+#&gt;  $ extraterrestrial_horizontal_radiation           : num  0 0 0 0 0 0 0 43 236 410 ...
+#&gt;  $ extraterrestrial_direct_normal_radiation        : num  0 0 0 0 0 ...
+#&gt;  $ horizontal_infrared_radiation_intensity_from_sky: num  218 227 230 230 232 232 232 224 207 214 ...
+....
+```
+
+---
+
+
+```r
+weekdays(epw$data(1)$datetime[[1]])
+```
+
+```
+#&gt; [1] "Sunday"
+```
+
+```r
+epw$period(1)$start_day_of_week
+```
+
+```
+#&gt; [1] 7
+```
+
+---
+
+## Get Abnormal Weather Data
+
+
+```r
+epw$abnormal_data(keep_all = FALSE)
+```
+
+```
+#&gt;       line            datetime year month day hour minute albedo
+#&gt;    1:    9 1986-01-01 01:00:00 1986     1   1    1      0    999
+#&gt;    2:   10 1986-01-01 02:00:00 1986     1   1    2      0    999
+#&gt;    3:   11 1986-01-01 03:00:00 1986     1   1    3      0    999
+#&gt;    4:   12 1986-01-01 04:00:00 1986     1   1    4      0    999
+#&gt;    5:   13 1986-01-01 05:00:00 1986     1   1    5      0    999
+#&gt;   ---                                                           
+#&gt; 8037: 8764 1981-12-31 20:00:00 1981    12  31   20      0    999
+#&gt; 8038: 8765 1981-12-31 21:00:00 1981    12  31   21      0    999
+#&gt; 8039: 8766 1981-12-31 22:00:00 1981    12  31   22      0    999
+#&gt; 8040: 8767 1981-12-31 23:00:00 1981    12  31   23      0    999
+#&gt; 8041: 8768 1981-01-01 00:00:00 1981    12  31   24      0    999
+#&gt;       liquid_precip_depth liquid_precip_rate
+#&gt;    1:                 999                 99
+#&gt;    2:                 999                 99
+....
+```
+
+---
+
+## Get Redundant Weather Data
+
+
+```r
+epw$redundant_data()
+```
+
+```
+#&gt; ── Info ───────────────────────────────────────────────────────────────────
+#&gt; No redundant data found.
+```
+
+```
+#&gt; Empty data.table (0 rows and 37 cols): line,datetime,year,month,day,hour...
+```
+
+---
+
+## Modify Weather Data In-Place
+
+
+```r
+epw$add_unit()
+dry_bulb &lt;- epw$data()$dry_bulb_temperature
+head(dry_bulb)
+```
+
+```
+#&gt; Units: [°C]
+#&gt; [1] -12.2 -11.7 -11.1 -11.1 -10.6 -10.6
+```
+
+
+```r
+units(dry_bulb) &lt;- with(units::ud_units, "kelvin")
+head(dry_bulb)
+```
+
+```
+#&gt; Units: [K]
+#&gt; [1] 260.95 261.45 262.05 262.05 262.55 262.55
+```
+
+---
+
+## Modify Weather Data In-Place
+
+
+```r
+epw$make_na(missing = TRUE)
+str(epw$abnormal_data(keep_all = FALSE))
+```
+
+```
+#&gt; Classes 'data.table' and 'data.frame':	8041 obs. of  10 variables:
+#&gt;  $ line               : int  9 10 11 12 13 14 15 16 17 18 ...
+#&gt;  $ datetime           : POSIXct, format: "1986-01-01 01:00:00" "1986-01-01 02:00:00" ...
+#&gt;  $ year               : int  1986 1986 1986 1986 1986 1986 1986 1986 1986 1986 ...
+#&gt;  $ month              : int  1 1 1 1 1 1 1 1 1 1 ...
+#&gt;  $ day                : int  1 1 1 1 1 1 1 1 1 1 ...
+#&gt;  $ hour               : int  1 2 3 4 5 6 7 8 9 10 ...
+#&gt;  $ minute             : int  0 0 0 0 0 0 0 0 0 0 ...
+#&gt;  $ albedo             : num  NA NA NA NA NA NA NA NA NA NA ...
+#&gt;  $ liquid_precip_depth:Object of class units:
+#&gt;  num  NA NA NA NA NA NA NA NA NA NA ...
+#&gt;   ..- attr(*, "units")=List of 2
+#&gt;   .. ..$ numerator  : chr "mm"
+#&gt;   .. ..$ denominator: chr 
+#&gt;   .. ..- attr(*, "class")= chr "symbolic_units"
+....
+```
+
+---
+
+## Set Weather Data
+
+
+```r
+epw$add(data, realyear = FALSE, name = NULL, start_day_of_week = NULL, after = 0L, warning = TRUE)
+epw$set(data, realyear = FALSE, name = NULL, start_day_of_week = NULL, period = 1L, warning = TRUE)
+epw$delete(period)
+```
+
+---
+
+## Save Weather File
+
+
+```r
+epw$save()
+```
+
+For more info, see `?Epw`
+
+---
+
+## Note on Using Leap-Year AMY Weather Data in EnergyPlus?
+
+See [#32](https://github.com/hongyuanjia/eplusr/issues/32)
+
+
+```r
+#     version type_runperiod type_epw num_row num_leap
+#  1:     8.8            tmy  nonleap    8760       24
+#  2:     9.0            tmy  nonleap    8760       24
+#  3:     9.1            tmy  nonleap    8760       24
+#  4:     8.8            amy  nonleap    8760       24
+#  5:     9.0            amy  nonleap    8760       24
+#  6:     9.1            amy  nonleap    8760       24
+#  7:     8.8            tmy     leap    8784       48
+#  8:     9.0            tmy     leap    8784       48
+#  9:     9.1            tmy     leap    8760       24
+# 10:     8.8            amy     leap    8784       48
+# 11:     9.0            amy     leap    8784       48
+# 12:     9.1            amy     leap    8784       48
+```
+
+---
+
+class: inverse middle center
+
+.animated.bounce[
+&lt;img src="figure/logo.svg" height=280px&gt;
+]
+
+## Summary
+
+---
+
+## Class structure
+
+.pull-left[
+* `Idd` class --&gt; Model definition
+
+* `IddObject` class --&gt; Single class definition
+
+* `Idf` class --&gt; Model itself
+
+* `IdfObject` class --&gt; Single object
+
+* `Epw` class --&gt; Weather file
+
+* `EPlusJob` class --&gt; Single simulation
+
+* `ParametricJob` class --&gt; Parametric simulations
+]
+
+.pull-right[
+![](figure/class_structure.png)
+]
+
+---
+
+## Future plan
+
+* C++ parser for IDD, IDF, and EPW
+
+* Integration with Stan (sensitivity analysis, Bayesian Calibration)
+
+* HVAC builder based on EnergyPlus example files
+
+* Version updater
+
+* Eplusr Specific option header?
+
+* A Shiny-based GUI?
+
+* Friendly schedule generator?
+
+---
+
+## Call for Contributors
+
+.center[&lt;img src="figure/issue.png" width="70%" align="center" /&gt;]
+
+
+---
+
+class: right, middle
+
+# Thanks!
+
+&lt;img class="circle" src="https://github.com/hongyuanjia.png" width="150px"/&gt;
+
+[<i class="fab  fa-twitter "></i> @jiahony](http://twitter.com/jiahony)
+
+[<i class="fab  fa-github "></i> @hongyuanjia](http://github.com/hongyuanjia)
+
+[<i class="fas  fa-envelope "></i> hongyuan.jia@bears-berkeley.sg](mailto:hongyuan.jia@bears-berkeley.sg)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"navigation": {
+"scroll": false
+}
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
